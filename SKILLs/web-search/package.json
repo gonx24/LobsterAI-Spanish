@@ -7,7 +7,7 @@
     "build": "tsc",
     "start": "node dist/server/index.js",
     "dev": "tsc && node dist/server/index.js",
-     "postinstall": "npm run install:skills",
+    "postinstall": "npm run install:skills",
     "install:skills": "find SKILLs -name package.json -execdir npm install \\;",
     "build:skills": "find SKILLs -name tsconfig.json -execdir npx tsc -p {} \\;"
   },
