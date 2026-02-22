@@ -64,7 +64,7 @@ class QuickActionService {
     const language = i18nService.getLanguage();
 
     return config.actions.map(action => {
-      const actionI18n = i18nData[language]?.[action.id];
+   const actionI18n = (i18nData as any)[language]?.[action.id];
 
       return {
         ...action,
