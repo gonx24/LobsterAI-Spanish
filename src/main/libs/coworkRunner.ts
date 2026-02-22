@@ -1996,6 +1996,275 @@ export class CoworkRunner extends EventEmitter {
     return null;
   }
 
+  // ==================== DETECCIÓN AUTOMÁTICA DE SKILLS ====================
+
+  /**
+   * Detecta automáticamente si un mensaje del usuario requiere un skill específico
+   * basado en palabras clave y patrones del lenguaje natural.
+   */
+  private detectSkillByKeywords(message: string): { toolName: string; toolInput: Record<string, unknown> } | null {
+    const lowerMessage = message.toLowerCase().trim();
+    
+    console.log(`[Skill Detection] Analyzing message: "${message}"`);
+    
+    // ===== DETECCIÓN DE CLIMA (weather) =====
+    if (lowerMessage.includes('clima') || 
+        lowerMessage.includes('temperatura') || 
+        lowerMessage.includes('weather') ||
+        lowerMessage.includes('lluvia') ||
+        lowerMessage.includes('pronóstico') ||
+        lowerMessage.includes('pronostico') ||
+        lowerMessage.includes('qué tiempo') ||
+        lowerMessage.includes('que tiempo')) {
+      
+      // Intentar extraer ubicación después de "en" o "de"
+      let location = this.extractLocation(message) || '';
+      
+      // Si no se encuentra ubicación, usar valor por defecto
+      if (!location) {
+        // Buscar palabras que podrían ser ciudades
+        const words = message.split(/[\s,]+/);
+        for (const word of words) {
+          // Si la palabra empieza con mayúscula y no es una palabra común
+          if (word.length > 2 && /^[A-ZÁÉÍÓÚÑ]/.test(word)) {
+            location = word;
+            break;
+          }
+        }
+      }
+      
+      const toolInput = { location: location || 'default' };
+      console.log(`[Skill Detection] Detected weather with args:`, toolInput);
+      
+      return {
+        toolName: 'weather',
+        toolInput: toolInput
+      };
+    }
+    
+    // ===== DETECCIÓN DE DOCUMENTOS WORD (docx) =====
+    if (lowerMessage.includes('documento') || 
+        lowerMessage.includes('word') ||
+        lowerMessage.includes('informe') ||
+        lowerMessage.includes('reporte') ||
+        lowerMessage.includes('carta') ||
+        lowerMessage.includes('contrato') ||
+        (lowerMessage.includes('escribe') && lowerMessage.includes('archivo'))) {
+      
+      // Extraer título potencial
+      const title = this.extractTitle(message) || 'Documento';
+      
+      const toolInput = { 
+        title: title,
+        content: message,
+        format: 'professional'
+      };
+      
+      console.log(`[Skill Detection] Detected docx with args:`, toolInput);
+      
+      return {
+        toolName: 'docx',
+        toolInput: toolInput
+      };
+    }
+    
+    // ===== DETECCIÓN DE EXCEL (xlsx) =====
+    if (lowerMessage.includes('excel') || 
+        lowerMessage.includes('hoja de cálculo') || 
+        lowerMessage.includes('hoja de calculo') ||
+        lowerMessage.includes('tabla') ||
+        lowerMessage.includes('presupuesto') ||
+        (lowerMessage.includes('datos') && lowerMessage.includes('organiza'))) {
+      
+      const toolInput = { 
+        title: this.extractTitle(message) || 'Datos',
+        sheets: [{ name: 'Sheet1', columns: ['A', 'B', 'C'], data: [] as any[][] }]
+      };
+      
+      console.log(`[Skill Detection] Detected xlsx with args:`, toolInput);
+      
+      return {
+        toolName: 'xlsx',
+        toolInput: toolInput
+      };
+    }
+    
+    // ===== DETECCIÓN DE PRESENTACIONES (pptx) =====
+    if (lowerMessage.includes('presentación') || 
+        lowerMessage.includes('presentacion') ||
+        lowerMessage.includes('powerpoint') ||
+        lowerMessage.includes('ppt') ||
+        lowerMessage.includes('slides') ||
+        lowerMessage.includes('diapositivas')) {
+      
+      const toolInput = { 
+        title: this.extractTitle(message) || 'Presentación',
+        slides: 5,
+        topics: [message]
+      };
+      
+      console.log(`[Skill Detection] Detected pptx with args:`, toolInput);
+      
+      return {
+        toolName: 'pptx',
+        toolInput: toolInput
+      };
+    }
+    
+    // ===== DETECCIÓN DE BÚSQUEDA WEB (web-search) =====
+    if (lowerMessage.includes('busca') || 
+        lowerMessage.includes('investiga') ||
+        lowerMessage.includes('encuentra') ||
+        lowerMessage.includes('search') ||
+        lowerMessage.includes('google') ||
+        lowerMessage.includes('internet') ||
+        lowerMessage.includes('últimas noticias') ||
+        lowerMessage.includes('ultimas noticias')) {
+      
+      // Eliminar palabras de comando para obtener la consulta real
+      let query = message.replace(/busca|investiga|encuentra|por favor|please|puedes|could you|can you/gi, '').trim();
+      if (!query) query = message;
+      
+      const toolInput = { query: query };
+      
+      console.log(`[Skill Detection] Detected web-search with args:`, toolInput);
+      
+      return {
+        toolName: 'web-search',
+        toolInput: toolInput
+      };
+    }
+    
+    // ===== DETECCIÓN DE PDF =====
+    if (lowerMessage.includes('pdf') || 
+        lowerMessage.includes('extrae texto') ||
+        (lowerMessage.includes('lee') && lowerMessage.includes('archivo'))) {
+      
+      const toolInput = { 
+        action: 'extract_text',
+        source: this.extractFileName(message) || 'documento.pdf'
+      };
+      
+      console.log(`[Skill Detection] Detected pdf with args:`, toolInput);
+      
+      return {
+        toolName: 'pdf',
+        toolInput: toolInput
+      };
+    }
+    
+    // ===== DETECCIÓN DE TAREAS PROGRAMADAS =====
+    if (lowerMessage.includes('cada día') || 
+        lowerMessage.includes('todos los días') ||
+        lowerMessage.includes('todos los dias') ||
+        lowerMessage.includes('cada mañana') ||
+        lowerMessage.includes('cada mañana') ||
+        lowerMessage.includes('diariamente') ||
+        lowerMessage.includes('semanalmente') ||
+        lowerMessage.includes('cron')) {
+      
+      // Detectar tipo de programación
+      let schedule = '0 9 * * *'; // Default: diario a las 9 AM
+      
+      if (lowerMessage.includes('cada hora') || lowerMessage.includes('cada 60 minutos')) {
+        schedule = '0 * * * *'; // Cada hora
+      } else if (lowerMessage.includes('cada minuto')) {
+        schedule = '* * * * *'; // Cada minuto
+      } else if (lowerMessage.includes('lunes') || lowerMessage.includes('weekly')) {
+        schedule = '0 9 * * 1'; // Cada lunes a las 9 AM
+      }
+      
+      const toolInput = { 
+        task: message,
+        schedule: schedule
+      };
+      
+      console.log(`[Skill Detection] Detected scheduled-task with args:`, toolInput);
+      
+      return {
+        toolName: 'scheduled-task',
+        toolInput: toolInput
+      };
+    }
+    
+    return null;
+  }
+
+  /**
+   * Extrae una ubicación de un mensaje de texto
+   */
+  private extractLocation(message: string): string | null {
+    // Patrones para español e inglés
+    const patterns = [
+      /en\s+([a-zA-ZáéíóúñÁÉÍÓÚÑ\s,]+?)(?:\s+(?:por favor|please|ahora|now|\.|\?|$))/i,
+      /de\s+([a-zA-ZáéíóúñÁÉÍÓÚÑ\s,]+?)(?:\s+(?:por favor|please|ahora|now|\.|\?|$))/i,
+      /para\s+([a-zA-ZáéíóúñÁÉÍÓÚÑ\s,]+?)(?:\s+(?:por favor|please|\.|\?|$))/i,
+      /in\s+([a-zA-Z\s,]+?)(?:\s+(?:please|now|\.|\?|$))/i,
+      /at\s+([a-zA-Z\s,]+?)(?:\s+(?:please|now|\.|\?|$))/i,
+      /for\s+([a-zA-Z\s,]+?)(?:\s+(?:please|now|\.|\?|$))/i
+    ];
+    
+    for (const pattern of patterns) {
+      const match = message.match(pattern);
+      if (match && match[1]) {
+        return match[1].trim();
+      }
+    }
+    
+    return null;
+  }
+
+  /**
+   * Extrae un título de un mensaje de texto
+   */
+  private extractTitle(message: string): string | null {
+    // Buscar después de "sobre", "de", "titulado", "llamado"
+    const patterns = [
+      /sobre\s+["']?([a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+?)["']?(?:\s+(?:por favor|please|\.|\?|$))/i,
+      /de\s+["']?([a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+?)["']?(?:\s+(?:por favor|please|\.|\?|$))/i,
+      /titulado\s+["']?([a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+?)["']?(?:\s+(?:por favor|please|\.|\?|$))/i,
+      /llamado\s+["']?([a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+?)["']?(?:\s+(?:por favor|please|\.|\?|$))/i,
+      /about\s+["']?([a-zA-Z\s]+?)["']?(?:\s+(?:please|\.|\?|$))/i,
+      /called\s+["']?([a-zA-Z\s]+?)["']?(?:\s+(?:please|\.|\?|$))/i
+    ];
+    
+    for (const pattern of patterns) {
+      const match = message.match(pattern);
+      if (match && match[1]) {
+        return match[1].trim();
+      }
+    }
+    
+    // Si no hay patrón específico, tomar las primeras palabras
+    const words = message.split(/\s+/).filter(w => w.length > 3);
+    if (words.length > 0) {
+      return words.slice(0, 3).join(' ');
+    }
+    
+    return null;
+  }
+
+  /**
+   * Extrae un nombre de archivo de un mensaje
+   */
+  private extractFileName(message: string): string | null {
+    const patterns = [
+      /["']([^"']+\.(?:pdf|docx|xlsx|pptx|txt|md))["']/i,
+      /([a-zA-Z0-9_\-]+\.(?:pdf|docx|xlsx|pptx|txt|md))/i
+    ];
+    
+    for (const pattern of patterns) {
+      const match = message.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+    
+    return null;
+  }
+
+  // ==================== FIN DE DETECCIÓN AUTOMÁTICA ====================
+
   async startSession(
     sessionId: string,
     prompt: string,
@@ -2013,6 +2282,22 @@ export class CoworkRunner extends EventEmitter {
     if (!session) {
       throw new Error(`Session ${sessionId} not found`);
     }
+
+    // ===== NUEVO: DETECCIÓN AUTOMÁTICA DE SKILLS =====
+    const detectedSkill = this.detectSkillByKeywords(prompt);
+    if (detectedSkill && !options.skillIds?.length) {
+      // Si detectamos un skill, lo agregamos a los skillIds
+      options.skillIds = [detectedSkill.toolName];
+      
+      // Para skills que no requieren aprobación, podemos auto-aprobar
+      const autoApproveSkills = ['weather', 'web-search'];
+      if (autoApproveSkills.includes(detectedSkill.toolName)) {
+        options.autoApprove = true;
+      }
+      
+      console.log(`[Skill Detection] Auto-detected skill: ${detectedSkill.toolName}`);
+    }
+    // ===== FIN DE DETECCIÓN =====
 
     // Mark session as running
     this.store.updateSession(sessionId, { status: 'running' });
@@ -2401,6 +2686,13 @@ export class CoworkRunner extends EventEmitter {
         if (blockedToolResult) {
           return blockedToolResult;
         }
+
+        // ===== NUEVO: AUTO-APROBAR CIERTOS SKILLS =====
+        const autoApproveSkills = ['weather', 'web-search', 'conversation_search', 'recent_chats'];
+        if (autoApproveSkills.includes(resolvedName)) {
+          return { behavior: 'allow', updatedInput: resolvedInput };
+        }
+        // ===== FIN DE AUTO-APROBACIÓN =====
 
         // Auto-approve mode (kept for compatibility with legacy callers).
         if (activeSession.autoApprove) {
