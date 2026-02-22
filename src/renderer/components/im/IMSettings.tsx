@@ -41,7 +41,7 @@ const IMSettings: React.FC = () => {
   const [testingPlatform, setTestingPlatform] = useState<IMPlatform | null>(null);
   const [connectivityResults, setConnectivityResults] = useState<Partial<Record<IMPlatform, IMConnectivityTestResult>>>({});
   const [connectivityModalPlatform, setConnectivityModalPlatform] = useState<IMPlatform | null>(null);
-  const [language, setLanguage] = useState<'zh' | 'en'>(i18nService.getLanguage());
+  const [language, setLanguage] = useState<'zh' | 'en' |'sp'>(i18nService.getLanguage());
 
   // Subscribe to language changes
   useEffect(() => {

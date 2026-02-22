@@ -142,7 +142,7 @@ export interface AppConfig {
   // 主题配置
   theme: 'light' | 'dark' | 'system';
   // 语言配置
-  language: 'zh' | 'en';
+ language: 'zh' | 'en' | 'sp';
   // 语言初始化标记 (用于判断是否是首次启动)
   language_initialized?: boolean;
   // 应用配置
@@ -307,7 +307,7 @@ export const EN_PRIORITY_PROVIDERS = ['openai', 'anthropic', 'gemini'] as const;
 /**
  * 根据语言获取可见的模型提供商
  */
-export const getVisibleProviders = (language: 'zh' | 'en'): readonly string[] => {
+export const getVisibleProviders = (language: 'zh' | 'en' | 'sp'): readonly string[] => {
   // 开发环境下显示所有提供商
   // if (import.meta.env.DEV) {
   //   return [...CHINA_PROVIDERS, ...GLOBAL_PROVIDERS];
