@@ -2002,15 +2002,15 @@ export class CoworkRunner extends EventEmitter {
    * Detecta automáticamente si un mensaje del usuario requiere un skill específico
    * basado en palabras clave y patrones del lenguaje natural.
    */
-  private detectSkillByKeywords(message: string): { toolName: string; toolInput: Record<string, unknown> } | null {
-    const lowerMessage = message.toLowerCase().trim();
-    
-    console.log(`[Skill Detection] Analyzing message: "${message}"`);
-    
-    // ===== DETECCIÓN DE CLIMA (weather) =====
-    if (lowerMessage.includes('clima') || 
-        lowerMessage.includes('temperatura') || 
-        lowerMessage.includes('weather') ||
+//  private detectSkillByKeywords(message: string): { toolName: string; toolInput: Record<string, unknown> } | null {
+//    const lowerMessage = message.toLowerCase().trim();
+//    
+//    console.log(`[Skill Detection] Analyzing message: "${message}"`);
+//    
+//    // ===== DETECCIÓN DE CLIMA (weather) =====
+//    if (lowerMessage.includes('clima') || 
+//        lowerMessage.includes('temperatura') || 
+/*        lowerMessage.includes('weather') ||
         lowerMessage.includes('lluvia') ||
         lowerMessage.includes('pronóstico') ||
         lowerMessage.includes('pronostico') ||
@@ -2018,7 +2018,7 @@ export class CoworkRunner extends EventEmitter {
         lowerMessage.includes('que tiempo')) {
       
       // Intentar extraer ubicación después de "en" o "de"
-      let location = this.extractLocation(message) || '';
+      let location = this.extractLocation(message) || 'El Bolsón';
       
       // Si no se encuentra ubicación, usar valor por defecto
       if (!location) {
@@ -2193,76 +2193,212 @@ export class CoworkRunner extends EventEmitter {
   /**
    * Extrae una ubicación de un mensaje de texto
    */
-  private extractLocation(message: string): string | null {
-    // Patrones para español e inglés
-    const patterns = [
-      /en\s+([a-zA-ZáéíóúñÁÉÍÓÚÑ\s,]+?)(?:\s+(?:por favor|please|ahora|now|\.|\?|$))/i,
-      /de\s+([a-zA-ZáéíóúñÁÉÍÓÚÑ\s,]+?)(?:\s+(?:por favor|please|ahora|now|\.|\?|$))/i,
-      /para\s+([a-zA-ZáéíóúñÁÉÍÓÚÑ\s,]+?)(?:\s+(?:por favor|please|\.|\?|$))/i,
-      /in\s+([a-zA-Z\s,]+?)(?:\s+(?:please|now|\.|\?|$))/i,
-      /at\s+([a-zA-Z\s,]+?)(?:\s+(?:please|now|\.|\?|$))/i,
-      /for\s+([a-zA-Z\s,]+?)(?:\s+(?:please|now|\.|\?|$))/i
-    ];
-    
-    for (const pattern of patterns) {
-      const match = message.match(pattern);
-      if (match && match[1]) {
-        return match[1].trim();
+  /**
+ * Extrae una ubicación de un mensaje de texto
+ */
+/*private extractLocation(message: string): string | null {
+  // Normalizar el mensaje (eliminar tildes para facilitar matching)
+  const normalize = (str: string) => {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  };
+  
+  const normalizedMsg = normalize(message);
+  
+  // Patrones para español (con y sin tildes)
+  const patterns = [
+    // "en Bariloche", "de Bariloche", "para Bariloche"
+    /(?:en|de|para)\s+([a-zA-Z\s,]+?)(?:\s+(?:por favor|please|ahora|now|\.|\?|$))/i,
+    // "Bariloche" al final o principio
+    /(?:^|\s)([A-Z][a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+?)(?:\s+(?:por favor|please|\.|\?|$))/i,
+    // "ciudad de Bariloche", "localidad de Bariloche"
+    /(?:ciudad|localidad|provincia)\s+(?:de\s+)?([a-zA-Z\s,]+?)(?:\s+(?:por favor|please|\.|\?|$))/i
+  ];
+  
+  for (const pattern of patterns) {
+    const match = message.match(pattern);
+    if (match && match[1]) {
+      let location = match[1].trim();
+      
+      // Limpiar ubicación (quitar artículos y preposiciones sobrantes)
+      location = location.replace(/^(?:la|el|los|las|de|del)\s+/i, '').trim();
+      
+      // Si la ubicación tiene sentido (no es demasiado corta)
+      if (location.length > 2) {
+        console.log(`[Location] Extraída: "${location}"`);
+        return location;
       }
     }
-    
-    return null;
   }
+  
+  // Último recurso: buscar cualquier palabra que empiece con mayúscula
+  const words = message.split(/[\s,]+/);
+  for (const word of words) {
+    if (word.length > 3 && /^[A-ZÁÉÍÓÚÑ]/.test(word)) {
+      console.log(`[Location] Palabra con mayúscula: "${word}"`);
+      return word;
+    }
+  }
+  
+  console.log('[Location] No se pudo extraer ubicación');
+  return null;
+}
+
+/**
+ * Extrae un título de un mensaje de texto
+ */
+/*private extractTitle(message: string): string | null {
+  // Buscar después de "sobre", "de", "titulado", "llamado"
+  const patterns = [
+    /sobre\s+["']?([a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+?)["']?(?:\s+(?:por favor|please|\.|\?|$))/i,
+    /de\s+["']?([a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+?)["']?(?:\s+(?:por favor|please|\.|\?|$))/i,
+    /titulado\s+["']?([a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+?)["']?(?:\s+(?:por favor|please|\.|\?|$))/i,
+    /llamado\s+["']?([a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+?)["']?(?:\s+(?:por favor|please|\.|\?|$))/i,
+    /about\s+["']?([a-zA-Z\s]+?)["']?(?:\s+(?:please|\.|\?|$))/i,
+    /called\s+["']?([a-zA-Z\s]+?)["']?(?:\s+(?:please|\.|\?|$))/i
+  ];
+  
+  for (const pattern of patterns) {
+    const match = message.match(pattern);
+    if (match && match[1]) {
+      return match[1].trim();
+    }
+  }
+
+  // Si no hay patrón específico, tomar las primeras palabras
+  const words = message.split(/\s+/).filter(w => w.length > 3);
+  if (words.length > 0) {
+    return words.slice(0, 3).join(' ');
+  }
+  
+  return null;
+}
+
+/**
+ * Extrae un nombre de archivo de un mensaje
+ */
+/*private extractFileName(message: string): string | null {
+  const patterns = [
+    /["']([^"']+\.(?:pdf|docx|xlsx|pptx|txt|md))["']/i,
+    /([a-zA-Z0-9_\-]+\.(?:pdf|docx|xlsx|pptx|txt|md))/i
+  ];
+  
+  for (const pattern of patterns) {
+    const match = message.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+  
+  return null;
+}
+  
 
   /**
-   * Extrae un título de un mensaje de texto
-   */
-  private extractTitle(message: string): string | null {
-    // Buscar después de "sobre", "de", "titulado", "llamado"
-    const patterns = [
-      /sobre\s+["']?([a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+?)["']?(?:\s+(?:por favor|please|\.|\?|$))/i,
-      /de\s+["']?([a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+?)["']?(?:\s+(?:por favor|please|\.|\?|$))/i,
-      /titulado\s+["']?([a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+?)["']?(?:\s+(?:por favor|please|\.|\?|$))/i,
-      /llamado\s+["']?([a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+?)["']?(?:\s+(?:por favor|please|\.|\?|$))/i,
-      /about\s+["']?([a-zA-Z\s]+?)["']?(?:\s+(?:please|\.|\?|$))/i,
-      /called\s+["']?([a-zA-Z\s]+?)["']?(?:\s+(?:please|\.|\?|$))/i
-    ];
-    
-    for (const pattern of patterns) {
-      const match = message.match(pattern);
-      if (match && match[1]) {
-        return match[1].trim();
+ * Ejecuta un skill específico y devuelve su resultado
+ */
+private async executeSkill(toolName: string, toolInput: Record<string, unknown>): Promise<string> {
+  console.log(`[Skill Execution] Ejecutando ${toolName} con:`, toolInput);
+  
+  try {
+    switch (toolName) {
+      case 'weather': {
+        const location = toolInput.location as string || 'default';
+        
+        // Usar wttr.in para obtener el clima (sin API key)
+        const { exec } = require('child_process');
+        const util = require('util');
+        const execAsync = util.promisify(exec);
+        
+        try {
+          // Formato: %t = temperatura, %c = condición, %l = ubicación
+          const { stdout } = await execAsync(`curl -s "wttr.in/${encodeURIComponent(location)}?format=%l:+%t+%c"`);
+          const result = stdout.trim();
+          
+          if (result && !result.includes('Unknown location')) {
+            return result;
+          } else {
+            return `No se pudo obtener el clima para ${location}`;
+          }
+        } catch (error) {
+          console.error('[Weather] Error:', error);
+          return `Error al consultar el clima: ${error instanceof Error ? error.message : String(error)}`;
+        }
       }
+      
+      case 'docx': {const { title, content, format } = toolInput;
+  
+  try {
+    // Validar que title sea string
+    let safeTitle = 'documento';
+    if (typeof title === 'string') {
+      safeTitle = title;
     }
     
-    // Si no hay patrón específico, tomar las primeras palabras
-    const words = message.split(/\s+/).filter(w => w.length > 3);
-    if (words.length > 0) {
-      return words.slice(0, 3).join(' ');
+    // Validar que content sea string
+    let safeContent = '';
+    if (typeof content === 'string') {
+      safeContent = content;
     }
     
-    return null;
+    const fs = require('fs');
+    const path = require('path');
+    
+    // Usar el directorio actual del proyecto
+    const projectDir = process.cwd();
+    
+    // Crear carpeta 'documentos' si no existe (opcional)
+    const docsDir = path.join(projectDir, 'documentos');
+    if (!fs.existsSync(docsDir)) {
+      fs.mkdirSync(docsDir, { recursive: true });
+    }
+    
+    // Crear nombre de archivo válido
+    const fileName = `${safeTitle.replace(/[^a-z0-9]/gi, '_')}.txt`;
+    const filePath = path.join(docsDir, fileName);
+    
+    // Escribir el archivo
+    fs.writeFileSync(filePath, safeContent);
+    
+    console.log(`[DOCX] Archivo creado en: ${filePath}`);
+    return `Documento "${safeTitle}" creado exitosamente en ${filePath}`;
+    
+  } catch (error) {
+    console.error('[DOCX Error]', error);
+    
+    // Manejo seguro del error
+    let errorMessage = 'Error desconocido';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    }
+    
+    return `Error al crear documento: ${errorMessage}`;
   }
-
-  /**
-   * Extrae un nombre de archivo de un mensaje
-   */
-  private extractFileName(message: string): string | null {
-    const patterns = [
-      /["']([^"']+\.(?:pdf|docx|xlsx|pptx|txt|md))["']/i,
-      /([a-zA-Z0-9_\-]+\.(?:pdf|docx|xlsx|pptx|txt|md))/i
-    ];
-    
-    for (const pattern of patterns) {
-      const match = message.match(pattern);
-      if (match && match[1]) {
-        return match[1];
+}
+      
+      case 'xlsx': {
+        return `Hoja de cálculo "${toolInput.title}" creada`;
       }
+      
+      case 'pptx': {
+        return `Presentación "${toolInput.title}" generada`;
+      }
+      
+      case 'web-search': {
+        const query = toolInput.query as string;
+        // Aquí iría la lógica de búsqueda
+        return `Resultados de búsqueda para: ${query}`;
+      }
+      
+      default:
+        return `Skill ${toolName} ejecutado`;
     }
-    
-    return null;
+  } catch (error) {
+    console.error(`[Skill Execution Error]`, error);
+    return `Error ejecutando skill: ${error instanceof Error ? error.message : String(error)}`;
   }
-
+}
   // ==================== FIN DE DETECCIÓN AUTOMÁTICA ====================
 
   async startSession(
@@ -2283,8 +2419,9 @@ export class CoworkRunner extends EventEmitter {
       throw new Error(`Session ${sessionId} not found`);
     }
 
-    // ===== NUEVO: DETECCIÓN AUTOMÁTICA DE SKILLS =====
+   /* // ===== NUEVO: DETECCIÓN AUTOMÁTICA DE SKILLS =====
     const detectedSkill = this.detectSkillByKeywords(prompt);
+    let enhancedPrompt = prompt; // 👈 NUEVO
     if (detectedSkill && !options.skillIds?.length) {
       // Si detectamos un skill, lo agregamos a los skillIds
       options.skillIds = [detectedSkill.toolName];
@@ -2296,9 +2433,14 @@ export class CoworkRunner extends EventEmitter {
       }
       
       console.log(`[Skill Detection] Auto-detected skill: ${detectedSkill.toolName}`);
-    }
-    // ===== FIN DE DETECCIÓN =====
 
+      // Ejecutar el skill y obtener resultado
+      const skillResult = await this.executeSkill(detectedSkill.toolName, detectedSkill.toolInput);
+
+      enhancedPrompt = `${prompt}\n\nYA TENGO LA INFORMACIÓN ACTUAL:\n${skillResult}\n\nRESPONDE AL USUARIO USANDO EXACTAMENTE ESTOS DATOS. NO DIGAS QUE NECESITAS CONSULTAR INTERNET.`;
+      this.addSystemMessage(sessionId, `[Resultado de ${detectedSkill.toolName}]: ${skillResult}`);
+    }
+   */
     // Mark session as running
     this.store.updateSession(sessionId, { status: 'running' });
 
@@ -2776,116 +2918,210 @@ export class CoworkRunner extends EventEmitter {
       coworkLog('INFO', 'runClaudeCodeLocal', 'Claude SDK loaded successfully');
 
       const memoryServerName = `user-memory-${sessionId.slice(0, 8)}`;
-      const memoryTools: any[] = [
-        tool(
-          'conversation_search',
-          'Search prior conversations by query and return Claude-style <chat> blocks.',
+   // Definir tools de memoria
+const memoryTools: any[] = [
+  tool(
+    'conversation_search',
+    'Search prior conversations by query and return Claude-style <chat> blocks.',
+    {
+      query: z.string().min(1),
+      max_results: z.number().int().min(1).max(10).optional(),
+      before: z.string().optional(),
+      after: z.string().optional(),
+    },
+    async (args: {
+      query: string;
+      max_results?: number;
+      before?: string;
+      after?: string;
+    }) => {
+      const text = this.runConversationSearchTool(args);
+      return {
+        content: [
           {
-            query: z.string().min(1),
-            max_results: z.number().int().min(1).max(10).optional(),
-            before: z.string().optional(),
-            after: z.string().optional(),
+            type: 'text',
+            text,
           },
-          async (args: {
-            query: string;
-            max_results?: number;
-            before?: string;
-            after?: string;
-          }) => {
-            const text = this.runConversationSearchTool(args);
-            return {
-              content: [
-                {
-                  type: 'text',
-                  text,
-                },
-              ],
-            } as any;
-          }
-        ),
-        tool(
-          'recent_chats',
-          'List recent chats and return Claude-style <chat> blocks.',
-          {
-            n: z.number().int().min(1).max(20).optional(),
-            sort_order: z.enum(['asc', 'desc']).optional(),
-            before: z.string().optional(),
-            after: z.string().optional(),
-          },
-          async (args: {
-            n?: number;
-            sort_order?: 'asc' | 'desc';
-            before?: string;
-            after?: string;
-          }) => {
-            const text = this.runRecentChatsTool(args);
-            return {
-              content: [{ type: 'text', text }],
-            } as any;
-          }
-        ),
-      ];
-      if (config.memoryEnabled) {
-        memoryTools.push(
-          tool(
-            'memory_user_edits',
-            'Manage user memories. action=list|add|update|delete.',
-            {
-              action: z.enum(['list', 'add', 'update', 'delete']),
-              id: z.string().optional(),
-              text: z.string().optional(),
-              confidence: z.number().min(0).max(1).optional(),
-              status: z.enum(['created', 'stale', 'deleted']).optional(),
-              is_explicit: z.boolean().optional(),
-              limit: z.number().int().min(1).max(200).optional(),
-              query: z.string().optional(),
-            },
-            async (args: {
-              action: 'list' | 'add' | 'update' | 'delete';
-              id?: string;
-              text?: string;
-              confidence?: number;
-              status?: 'created' | 'stale' | 'deleted';
-              is_explicit?: boolean;
-              limit?: number;
-              query?: string;
-            }) => {
-              try {
-                const result = this.runMemoryUserEditsTool(args);
-                return {
-                  content: [{
-                    type: 'text',
-                    text: result.text,
-                  }],
-                  isError: result.isError,
-                } as any;
-              } catch (error) {
-                return {
-                  content: [{
-                    type: 'text',
-                    text: this.formatMemoryUserEditsResult({
-                      action: args.action,
-                      successCount: 0,
-                      failedCount: 1,
-                      changedIds: [],
-                      reason: error instanceof Error ? error.message : String(error),
-                    }),
-                  }],
-                  isError: true,
-                } as any;
-              }
-            }
-          )
-        );
-      }
-      options.mcpServers = {
-        ...(options.mcpServers as Record<string, unknown> | undefined),
-        [memoryServerName]: createSdkMcpServer({
-          name: memoryServerName,
-          tools: memoryTools,
-        }),
-      };
+        ],
+      } as any;
+    }
+  ),
+  tool(
+    'recent_chats',
+    'List recent chats and return Claude-style <chat> blocks.',
+    {
+      n: z.number().int().min(1).max(20).optional(),
+      sort_order: z.enum(['asc', 'desc']).optional(),
+      before: z.string().optional(),
+      after: z.string().optional(),
+    },
+    async (args: {
+      n?: number;
+      sort_order?: 'asc' | 'desc';
+      before?: string;
+      after?: string;
+    }) => {
+      const text = this.runRecentChatsTool(args);
+      return {
+        content: [{ type: 'text', text }],
+      } as any;
+    }
+  ),
+];
 
+// ===== NUEVO: AGREGAR TOOLS DE SKILLS =====
+const skillTools: any[] = [
+  tool(
+    'get_weather',
+    'Obtiene el clima actual de una ciudad. Usa esta herramienta cuando el usuario pregunte por el clima o temperatura.',
+    {
+      location: z.string().describe('Nombre de la ciudad (ej: Madrid, Buenos Aires, El Bolsón)')
+    },
+    async (args: { location: string }) => {
+      console.log(`[Tool Call] get_weather called with location: ${args.location}`);
+      try {
+        const result = await this.executeSkill('weather', { location: args.location });
+        return {
+          content: [{ type: 'text', text: result }]
+        } as any;
+      } catch (error) {
+        console.error('[Tool Call Error]', error);
+        return {
+          content: [{ type: 'text', text: `Error al obtener el clima: ${error}` }],
+          isError: true
+        } as any;
+      }
+    }
+  ),
+  tool(
+    'create_document',
+    'Crea un documento Word. Usa esta herramienta cuando el usuario pida crear un documento, informe, reporte o carta.',
+    {
+      title: z.string().describe('Título del documento'),
+      content: z.string().describe('Contenido del documento'),
+      format: z.enum(['professional', 'simple']).optional().describe('Formato del documento')
+    },
+    async (args: { title: string; content: string; format?: string }) => {
+      console.log(`[Tool Call] create_document called with title: ${args.title}`);
+      const result = await this.executeSkill('docx', args);
+      return {
+        content: [{ type: 'text', text: result }]
+      } as any;
+    }
+  ),
+  tool(
+    'create_spreadsheet',
+    'Crea una hoja de cálculo Excel. Usa esta herramienta cuando el usuario pida crear un Excel, tabla o presupuesto.',
+    {
+      title: z.string().describe('Título de la hoja de cálculo'),
+      sheets: z.array(z.any()).optional().describe('Hojas del Excel')
+    },
+    async (args: { title: string; sheets?: any[] }) => {
+      console.log(`[Tool Call] create_spreadsheet called with title: ${args.title}`);
+      const result = await this.executeSkill('xlsx', args);
+      return {
+        content: [{ type: 'text', text: result }]
+      } as any;
+    }
+  ),
+  tool(
+    'create_presentation',
+    'Crea una presentación PowerPoint. Usa esta herramienta cuando el usuario pida crear una presentación, slides o ppt.',
+    {
+      title: z.string().describe('Título de la presentación'),
+      slides: z.number().optional().describe('Número de diapositivas'),
+      topics: z.array(z.string()).optional().describe('Temas a incluir')
+    },
+    async (args: { title: string; slides?: number; topics?: string[] }) => {
+      console.log(`[Tool Call] create_presentation called with title: ${args.title}`);
+      const result = await this.executeSkill('pptx', args);
+      return {
+        content: [{ type: 'text', text: result }]
+      } as any;
+    }
+  ),
+  tool(
+    'search_web',
+    'Busca información en internet. Usa esta herramienta cuando el usuario pida buscar información, investigar o encontrar algo en la web.',
+    {
+      query: z.string().describe('Término de búsqueda')
+    },
+    async (args: { query: string }) => {
+      console.log(`[Tool Call] search_web called with query: ${args.query}`);
+      const result = await this.executeSkill('web-search', args);
+      return {
+        content: [{ type: 'text', text: result }]
+      } as any;
+    }
+  ),
+];
+// ===== FIN NUEVO =====
+
+// Combinar todas las herramientas
+let allTools = [...memoryTools, ...skillTools];
+
+if (config.memoryEnabled) {
+  // push memory_user_edits tool
+  allTools.push(
+    tool(
+      'memory_user_edits',
+      'Manage user memories. action=list|add|update|delete.',
+      {
+        action: z.enum(['list', 'add', 'update', 'delete']),
+        id: z.string().optional(),
+        text: z.string().optional(),
+        confidence: z.number().min(0).max(1).optional(),
+        status: z.enum(['created', 'stale', 'deleted']).optional(),
+        is_explicit: z.boolean().optional(),
+        limit: z.number().int().min(1).max(200).optional(),
+        query: z.string().optional(),
+      },
+      async (args: {
+        action: 'list' | 'add' | 'update' | 'delete';
+        id?: string;
+        text?: string;
+        confidence?: number;
+        status?: 'created' | 'stale' | 'deleted';
+        is_explicit?: boolean;
+        limit?: number;
+        query?: string;
+      }) => {
+        try {
+          const result = this.runMemoryUserEditsTool(args);
+          return {
+            content: [{
+              type: 'text',
+              text: result.text,
+            }],
+            isError: result.isError,
+          } as any;
+        } catch (error) {
+          return {
+            content: [{
+              type: 'text',
+              text: this.formatMemoryUserEditsResult({
+                action: args.action,
+                successCount: 0,
+                failedCount: 1,
+                changedIds: [],
+                reason: error instanceof Error ? error.message : String(error),
+              }),
+            }],
+            isError: true,
+          } as any;
+        }
+      }
+    )
+  );
+}
+
+options.mcpServers = {
+  ...(options.mcpServers as Record<string, unknown> | undefined),
+  [memoryServerName]: createSdkMcpServer({
+    name: memoryServerName,
+    tools: allTools,
+  }),
+};
       const result = await query({ prompt, options } as any);
       coworkLog('INFO', 'runClaudeCodeLocal', 'Claude Code process started, iterating events');
       for await (const event of result as AsyncIterable<unknown>) {
