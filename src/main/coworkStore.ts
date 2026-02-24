@@ -907,7 +907,7 @@ export class CoworkStore {
     this.saveDb();
   }
 
-  getAppLanguage(): 'zh' | 'en' {
+  getAppLanguage(): 'zh' | 'en' | 'sp' {
     interface KvRow {
       value: string;
     }

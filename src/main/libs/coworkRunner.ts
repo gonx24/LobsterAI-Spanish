@@ -434,7 +434,7 @@ export class CoworkRunner extends EventEmitter {
   }
 
   private getSandboxUnavailableFallbackNotice(errorMessage: string): string {
-    if (this.store.getAppLanguage() === 'en') {
+    if (this.store.getAppLanguage() === 'sp') {
       return `Sandbox VM is unavailable. Falling back to local execution. (${errorMessage})`;
     }
     return `沙箱 VM 当前不可用，已回退为本地执行。（${errorMessage}）`;
@@ -1996,303 +1996,11 @@ export class CoworkRunner extends EventEmitter {
     return null;
   }
 
-  // ==================== DETECCIÓN AUTOMÁTICA DE SKILLS ====================
+  
 
-  /**
-   * Detecta automáticamente si un mensaje del usuario requiere un skill específico
-   * basado en palabras clave y patrones del lenguaje natural.
+    /**
+   * Ejecuta un skill específico y devuelve su resultado
    */
-//  private detectSkillByKeywords(message: string): { toolName: string; toolInput: Record<string, unknown> } | null {
-//    const lowerMessage = message.toLowerCase().trim();
-//    
-//    console.log(`[Skill Detection] Analyzing message: "${message}"`);
-//    
-//    // ===== DETECCIÓN DE CLIMA (weather) =====
-//    if (lowerMessage.includes('clima') || 
-//        lowerMessage.includes('temperatura') || 
-/*        lowerMessage.includes('weather') ||
-        lowerMessage.includes('lluvia') ||
-        lowerMessage.includes('pronóstico') ||
-        lowerMessage.includes('pronostico') ||
-        lowerMessage.includes('qué tiempo') ||
-        lowerMessage.includes('que tiempo')) {
-      
-      // Intentar extraer ubicación después de "en" o "de"
-      let location = this.extractLocation(message) || 'El Bolsón';
-      
-      // Si no se encuentra ubicación, usar valor por defecto
-      if (!location) {
-        // Buscar palabras que podrían ser ciudades
-        const words = message.split(/[\s,]+/);
-        for (const word of words) {
-          // Si la palabra empieza con mayúscula y no es una palabra común
-          if (word.length > 2 && /^[A-ZÁÉÍÓÚÑ]/.test(word)) {
-            location = word;
-            break;
-          }
-        }
-      }
-      
-      const toolInput = { location: location || 'default' };
-      console.log(`[Skill Detection] Detected weather with args:`, toolInput);
-      
-      return {
-        toolName: 'weather',
-        toolInput: toolInput
-      };
-    }
-    
-    // ===== DETECCIÓN DE DOCUMENTOS WORD (docx) =====
-    if (lowerMessage.includes('documento') || 
-        lowerMessage.includes('word') ||
-        lowerMessage.includes('informe') ||
-        lowerMessage.includes('reporte') ||
-        lowerMessage.includes('carta') ||
-        lowerMessage.includes('contrato') ||
-        (lowerMessage.includes('escribe') && lowerMessage.includes('archivo'))) {
-      
-      // Extraer título potencial
-      const title = this.extractTitle(message) || 'Documento';
-      
-      const toolInput = { 
-        title: title,
-        content: message,
-        format: 'professional'
-      };
-      
-      console.log(`[Skill Detection] Detected docx with args:`, toolInput);
-      
-      return {
-        toolName: 'docx',
-        toolInput: toolInput
-      };
-    }
-    
-    // ===== DETECCIÓN DE EXCEL (xlsx) =====
-    if (lowerMessage.includes('excel') || 
-        lowerMessage.includes('hoja de cálculo') || 
-        lowerMessage.includes('hoja de calculo') ||
-        lowerMessage.includes('tabla') ||
-        lowerMessage.includes('presupuesto') ||
-        (lowerMessage.includes('datos') && lowerMessage.includes('organiza'))) {
-      
-      const toolInput = { 
-        title: this.extractTitle(message) || 'Datos',
-        sheets: [{ name: 'Sheet1', columns: ['A', 'B', 'C'], data: [] as any[][] }]
-      };
-      
-      console.log(`[Skill Detection] Detected xlsx with args:`, toolInput);
-      
-      return {
-        toolName: 'xlsx',
-        toolInput: toolInput
-      };
-    }
-    
-    // ===== DETECCIÓN DE PRESENTACIONES (pptx) =====
-    if (lowerMessage.includes('presentación') || 
-        lowerMessage.includes('presentacion') ||
-        lowerMessage.includes('powerpoint') ||
-        lowerMessage.includes('ppt') ||
-        lowerMessage.includes('slides') ||
-        lowerMessage.includes('diapositivas')) {
-      
-      const toolInput = { 
-        title: this.extractTitle(message) || 'Presentación',
-        slides: 5,
-        topics: [message]
-      };
-      
-      console.log(`[Skill Detection] Detected pptx with args:`, toolInput);
-      
-      return {
-        toolName: 'pptx',
-        toolInput: toolInput
-      };
-    }
-    
-    // ===== DETECCIÓN DE BÚSQUEDA WEB (web-search) =====
-    if (lowerMessage.includes('busca') || 
-        lowerMessage.includes('investiga') ||
-        lowerMessage.includes('encuentra') ||
-        lowerMessage.includes('search') ||
-        lowerMessage.includes('google') ||
-        lowerMessage.includes('internet') ||
-        lowerMessage.includes('últimas noticias') ||
-        lowerMessage.includes('ultimas noticias')) {
-      
-      // Eliminar palabras de comando para obtener la consulta real
-      let query = message.replace(/busca|investiga|encuentra|por favor|please|puedes|could you|can you/gi, '').trim();
-      if (!query) query = message;
-      
-      const toolInput = { query: query };
-      
-      console.log(`[Skill Detection] Detected web-search with args:`, toolInput);
-      
-      return {
-        toolName: 'web-search',
-        toolInput: toolInput
-      };
-    }
-    
-    // ===== DETECCIÓN DE PDF =====
-    if (lowerMessage.includes('pdf') || 
-        lowerMessage.includes('extrae texto') ||
-        (lowerMessage.includes('lee') && lowerMessage.includes('archivo'))) {
-      
-      const toolInput = { 
-        action: 'extract_text',
-        source: this.extractFileName(message) || 'documento.pdf'
-      };
-      
-      console.log(`[Skill Detection] Detected pdf with args:`, toolInput);
-      
-      return {
-        toolName: 'pdf',
-        toolInput: toolInput
-      };
-    }
-    
-    // ===== DETECCIÓN DE TAREAS PROGRAMADAS =====
-    if (lowerMessage.includes('cada día') || 
-        lowerMessage.includes('todos los días') ||
-        lowerMessage.includes('todos los dias') ||
-        lowerMessage.includes('cada mañana') ||
-        lowerMessage.includes('cada mañana') ||
-        lowerMessage.includes('diariamente') ||
-        lowerMessage.includes('semanalmente') ||
-        lowerMessage.includes('cron')) {
-      
-      // Detectar tipo de programación
-      let schedule = '0 9 * * *'; // Default: diario a las 9 AM
-      
-      if (lowerMessage.includes('cada hora') || lowerMessage.includes('cada 60 minutos')) {
-        schedule = '0 * * * *'; // Cada hora
-      } else if (lowerMessage.includes('cada minuto')) {
-        schedule = '* * * * *'; // Cada minuto
-      } else if (lowerMessage.includes('lunes') || lowerMessage.includes('weekly')) {
-        schedule = '0 9 * * 1'; // Cada lunes a las 9 AM
-      }
-      
-      const toolInput = { 
-        task: message,
-        schedule: schedule
-      };
-      
-      console.log(`[Skill Detection] Detected scheduled-task with args:`, toolInput);
-      
-      return {
-        toolName: 'scheduled-task',
-        toolInput: toolInput
-      };
-    }
-    
-    return null;
-  }
-
-  /**
-   * Extrae una ubicación de un mensaje de texto
-   */
-  /**
- * Extrae una ubicación de un mensaje de texto
- */
-/*private extractLocation(message: string): string | null {
-  // Normalizar el mensaje (eliminar tildes para facilitar matching)
-  const normalize = (str: string) => {
-    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  };
-  
-  const normalizedMsg = normalize(message);
-  
-  // Patrones para español (con y sin tildes)
-  const patterns = [
-    // "en Bariloche", "de Bariloche", "para Bariloche"
-    /(?:en|de|para)\s+([a-zA-Z\s,]+?)(?:\s+(?:por favor|please|ahora|now|\.|\?|$))/i,
-    // "Bariloche" al final o principio
-    /(?:^|\s)([A-Z][a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+?)(?:\s+(?:por favor|please|\.|\?|$))/i,
-    // "ciudad de Bariloche", "localidad de Bariloche"
-    /(?:ciudad|localidad|provincia)\s+(?:de\s+)?([a-zA-Z\s,]+?)(?:\s+(?:por favor|please|\.|\?|$))/i
-  ];
-  
-  for (const pattern of patterns) {
-    const match = message.match(pattern);
-    if (match && match[1]) {
-      let location = match[1].trim();
-      
-      // Limpiar ubicación (quitar artículos y preposiciones sobrantes)
-      location = location.replace(/^(?:la|el|los|las|de|del)\s+/i, '').trim();
-      
-      // Si la ubicación tiene sentido (no es demasiado corta)
-      if (location.length > 2) {
-        console.log(`[Location] Extraída: "${location}"`);
-        return location;
-      }
-    }
-  }
-  
-  // Último recurso: buscar cualquier palabra que empiece con mayúscula
-  const words = message.split(/[\s,]+/);
-  for (const word of words) {
-    if (word.length > 3 && /^[A-ZÁÉÍÓÚÑ]/.test(word)) {
-      console.log(`[Location] Palabra con mayúscula: "${word}"`);
-      return word;
-    }
-  }
-  
-  console.log('[Location] No se pudo extraer ubicación');
-  return null;
-}
-
-/**
- * Extrae un título de un mensaje de texto
- */
-/*private extractTitle(message: string): string | null {
-  // Buscar después de "sobre", "de", "titulado", "llamado"
-  const patterns = [
-    /sobre\s+["']?([a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+?)["']?(?:\s+(?:por favor|please|\.|\?|$))/i,
-    /de\s+["']?([a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+?)["']?(?:\s+(?:por favor|please|\.|\?|$))/i,
-    /titulado\s+["']?([a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+?)["']?(?:\s+(?:por favor|please|\.|\?|$))/i,
-    /llamado\s+["']?([a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+?)["']?(?:\s+(?:por favor|please|\.|\?|$))/i,
-    /about\s+["']?([a-zA-Z\s]+?)["']?(?:\s+(?:please|\.|\?|$))/i,
-    /called\s+["']?([a-zA-Z\s]+?)["']?(?:\s+(?:please|\.|\?|$))/i
-  ];
-  
-  for (const pattern of patterns) {
-    const match = message.match(pattern);
-    if (match && match[1]) {
-      return match[1].trim();
-    }
-  }
-
-  // Si no hay patrón específico, tomar las primeras palabras
-  const words = message.split(/\s+/).filter(w => w.length > 3);
-  if (words.length > 0) {
-    return words.slice(0, 3).join(' ');
-  }
-  
-  return null;
-}
-
-/**
- * Extrae un nombre de archivo de un mensaje
- */
-/*private extractFileName(message: string): string | null {
-  const patterns = [
-    /["']([^"']+\.(?:pdf|docx|xlsx|pptx|txt|md))["']/i,
-    /([a-zA-Z0-9_\-]+\.(?:pdf|docx|xlsx|pptx|txt|md))/i
-  ];
-  
-  for (const pattern of patterns) {
-    const match = message.match(pattern);
-    if (match && match[1]) {
-      return match[1];
-    }
-  }
-  
-  return null;
-}
-  
-
   /**
  * Ejecuta un skill específico y devuelve su resultado
  */
@@ -2325,7 +2033,8 @@ private async executeSkill(toolName: string, toolInput: Record<string, unknown>)
         }
       }
       
-      case 'docx': {const { title, content, format } = toolInput;
+case 'docx': {
+  const { title, content, format } = toolInput;
   
   try {
     // Validar que title sea string
@@ -2343,18 +2052,28 @@ private async executeSkill(toolName: string, toolInput: Record<string, unknown>)
     const fs = require('fs');
     const path = require('path');
     
-    // Usar el directorio actual del proyecto
-    const projectDir = process.cwd();
+    // Obtener la configuración del store
+    const config = this.store.getConfig();
     
-    // Crear carpeta 'documentos' si no existe (opcional)
-    const docsDir = path.join(projectDir, 'documentos');
-    if (!fs.existsSync(docsDir)) {
-      fs.mkdirSync(docsDir, { recursive: true });
+    // Usar workingDirectory como ruta base
+    // Debería ser /home/gonzalo/lobsterai/project/
+    let projectDir = config.workingDirectory;
+    
+    // Si no hay workingDirectory, usar getSkillsRoot() como fallback
+    if (!projectDir) {
+      projectDir = getSkillsRoot();
+      console.log(`[DOCX] Usando getSkillsRoot() como fallback: ${projectDir}`);
+    }
+    
+    // Verificar si la carpeta existe, si no, crearla
+    if (!fs.existsSync(projectDir)) {
+      fs.mkdirSync(projectDir, { recursive: true });
+      console.log(`[DOCX] Carpeta creada en: ${projectDir}`);
     }
     
     // Crear nombre de archivo válido
     const fileName = `${safeTitle.replace(/[^a-z0-9]/gi, '_')}.txt`;
-    const filePath = path.join(docsDir, fileName);
+    const filePath = path.join(projectDir, fileName);
     
     // Escribir el archivo
     fs.writeFileSync(filePath, safeContent);
@@ -2377,9 +2096,222 @@ private async executeSkill(toolName: string, toolInput: Record<string, unknown>)
   }
 }
       
-      case 'xlsx': {
-        return `Hoja de cálculo "${toolInput.title}" creada`;
+    case 'xlsx': {
+  const { title, sheets, data, format } = toolInput;
+  
+  try {
+    // Validar entradas
+    const safeTitle = typeof title === 'string' ? title : 'hoja_calculo';
+    const safeSheets = Array.isArray(sheets) ? sheets : [];
+    const safeData = data && typeof data === 'object' ? data : {};
+    
+    const fs = require('fs');
+    const path = require('path');
+    const { exec } = require('child_process');
+    const util = require('util');
+    const execAsync = util.promisify(exec);
+    
+    // Obtener workingDirectory de la configuración
+    const projectDir = this.store.getConfig().workingDirectory;
+    
+    if (!projectDir) {
+      return 'Error: No se encontró el directorio de trabajo configurado';
+    }
+    
+    // Asegurar que existe
+    fs.mkdirSync(projectDir, { recursive: true });
+    
+    // Crear nombre de archivo válido (sin .xlsx si ya lo tiene)
+    let baseFileName = safeTitle;
+    if (!baseFileName.toLowerCase().endsWith('.xlsx')) {
+      baseFileName = `${baseFileName}.xlsx`;
+    }
+    const fileName = baseFileName.replace(/[^a-z0-9_.-]/gi, '_');
+    const filePath = path.join(projectDir, fileName);
+    
+    // Verificar si pandas está instalado
+    let pandasInstalled = false;
+    try {
+      await execAsync('python3 -c "import pandas"');
+      pandasInstalled = true;
+    } catch (error) {
+      console.warn('[XLSX] pandas no está instalado, usando openpyxl');
+    }
+    
+    if (!pandasInstalled) {
+      // Usar openpyxl (viene con Python por defecto)
+      const OPENPYXL_CODE = `
+import json
+import sys
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment
+
+try:
+    wb = Workbook()
+    
+    # Verificar si hay datos del usuario
+    sheets_data = ${JSON.stringify(safeSheets)}
+    main_data = ${JSON.stringify(safeData)}
+    
+    if len(sheets_data) > 0:
+        # Usar la primera hoja proporcionada
+        first_sheet = sheets_data[0]
+        ws = wb.active
+        ws.title = first_sheet.get('name', 'Datos')
+        
+        # Agregar datos de la hoja
+        sheet_data = first_sheet.get('data', [])
+        if sheet_data and len(sheet_data) > 0:
+            for row_idx, row in enumerate(sheet_data, 1):
+                for col_idx, value in enumerate(row, 1):
+                    ws.cell(row=row_idx, column=col_idx, value=value)
+        
+        # Agregar fórmulas si existen
+        formulas = first_sheet.get('formulas', {})
+        for cell_ref, formula in formulas.items():
+            ws[cell_ref] = formula
+            
+    elif main_data and len(main_data) > 0:
+        # Usar los datos del parámetro 'data'
+        ws = wb.active
+        ws.title = 'Datos'
+        
+        if isinstance(main_data, dict):
+            # Datos en formato diccionario
+            row = 1
+            for key, value in main_data.items():
+                ws.cell(row=row, column=1, value=key)
+                ws.cell(row=row, column=2, value=value)
+                row += 1
+        elif isinstance(main_data, list):
+            # Datos en formato lista
+            for row_idx, row_data in enumerate(main_data, 1):
+                if isinstance(row_data, (list, tuple)):
+                    for col_idx, value in enumerate(row_data, 1):
+                        ws.cell(row=row_idx, column=col_idx, value=value)
+                else:
+                    ws.cell(row=row_idx, column=1, value=row_data)
+    else:
+        # No hay datos del usuario, mostrar mensaje
+        ws = wb.active
+        ws.title = 'Información'
+        ws['A1'] = 'No se proporcionaron datos'
+        ws['A2'] = 'Use el parámetro "sheets" o "data" para agregar contenido'
+    
+    # Guardar archivo
+    wb.save('${filePath.replace(/\\/g, '\\\\')}')
+    print(json.dumps({"status": "success", "path": "${filePath}"}))
+    
+except Exception as e:
+    print(json.dumps({"status": "error", "message": str(e)}))
+`;
+      
+      // Escribir y ejecutar script
+      const scriptPath = path.join(projectDir, `_temp_xlsx_${Date.now()}.py`);
+      fs.writeFileSync(scriptPath, OPENPYXL_CODE);
+      
+      try {
+        const { stdout } = await execAsync(`python3 "${scriptPath}"`);
+        const result = JSON.parse(stdout);
+        fs.unlinkSync(scriptPath);
+        
+        if (result.status === 'error') {
+          return `Error al crear Excel: ${result.message}`;
+        }
+        
+        return `✅ Hoja de cálculo "${fileName}" creada exitosamente en:\n${filePath}`;
+        
+      } catch (error) {
+        if (fs.existsSync(scriptPath)) fs.unlinkSync(scriptPath);
+        throw error;
       }
+    } else {
+      // Usar pandas (está instalado)
+      const PANDAS_CODE = `
+import json
+import pandas as pd
+import sys
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment
+
+try:
+    sheets_data = ${JSON.stringify(safeSheets)}
+    main_data = ${JSON.stringify(safeData)}
+    
+    with pd.ExcelWriter('${filePath.replace(/\\/g, '\\\\')}', engine='openpyxl') as writer:
+        if len(sheets_data) > 0:
+            # Múltiples hojas proporcionadas por el usuario
+            for sheet_data in sheets_data:
+                sheet_name = sheet_data.get('name', 'Sheet')
+                sheet_data_content = sheet_data.get('data', [])
+                
+                if sheet_data_content and len(sheet_data_content) > 0:
+                    df = pd.DataFrame(sheet_data_content)
+                    df.to_excel(writer, sheet_name=sheet_name, index=False)
+                    
+                    # Aplicar formato si se especificó
+                    if sheet_data.get('formatting', False):
+                        workbook = writer.book
+                        worksheet = writer.sheets[sheet_name]
+                        
+                        # Formato a encabezados
+                        for col in range(1, len(df.columns) + 1):
+                            cell = worksheet.cell(row=1, column=col)
+                            cell.font = Font(bold=True)
+                else:
+                    # Hoja vacía
+                    pd.DataFrame().to_excel(writer, sheet_name=sheet_name, index=False)
+                    
+        elif main_data and len(main_data) > 0:
+            # Datos simples en formato diccionario o lista
+            if isinstance(main_data, dict):
+                df = pd.DataFrame([main_data])
+            elif isinstance(main_data, list):
+                if all(isinstance(item, dict) for item in main_data):
+                    df = pd.DataFrame(main_data)
+                else:
+                    df = pd.DataFrame({'valores': main_data})
+            else:
+                df = pd.DataFrame({'dato': [main_data]})
+            
+            df.to_excel(writer, sheet_name='Datos', index=False)
+        else:
+            # Sin datos del usuario - crear Excel vacío con mensaje
+            df = pd.DataFrame({'Mensaje': ['No se proporcionaron datos']})
+            df.to_excel(writer, sheet_name='Información', index=False)
+    
+    print(json.dumps({"status": "success", "path": "${filePath}"}))
+    
+except Exception as e:
+    print(json.dumps({"status": "error", "message": str(e)}))
+`;
+      
+      // Escribir y ejecutar script
+      const scriptPath = path.join(projectDir, `_temp_pandas_${Date.now()}.py`);
+      fs.writeFileSync(scriptPath, PANDAS_CODE);
+      
+      try {
+        const { stdout } = await execAsync(`python3 "${scriptPath}"`);
+        const result = JSON.parse(stdout);
+        fs.unlinkSync(scriptPath);
+        
+        if (result.status === 'error') {
+          return `Error al crear Excel: ${result.message}`;
+        }
+        
+        return `✅ Hoja de cálculo "${fileName}" creada exitosamente en:\n${filePath}`;
+        
+      } catch (error) {
+        if (fs.existsSync(scriptPath)) fs.unlinkSync(scriptPath);
+        throw error;
+      }
+    }
+    
+  } catch (error) {
+    console.error('[XLSX Error]', error);
+    return `❌ Error al crear hoja de cálculo: ${error instanceof Error ? error.message : String(error)}`;
+  }
+}
       
       case 'pptx': {
         return `Presentación "${toolInput.title}" generada`;
@@ -2399,7 +2331,7 @@ private async executeSkill(toolName: string, toolInput: Record<string, unknown>)
     return `Error ejecutando skill: ${error instanceof Error ? error.message : String(error)}`;
   }
 }
-  // ==================== FIN DE DETECCIÓN AUTOMÁTICA ====================
+  
 
   async startSession(
     sessionId: string,
@@ -2419,28 +2351,6 @@ private async executeSkill(toolName: string, toolInput: Record<string, unknown>)
       throw new Error(`Session ${sessionId} not found`);
     }
 
-   /* // ===== NUEVO: DETECCIÓN AUTOMÁTICA DE SKILLS =====
-    const detectedSkill = this.detectSkillByKeywords(prompt);
-    let enhancedPrompt = prompt; // 👈 NUEVO
-    if (detectedSkill && !options.skillIds?.length) {
-      // Si detectamos un skill, lo agregamos a los skillIds
-      options.skillIds = [detectedSkill.toolName];
-      
-      // Para skills que no requieren aprobación, podemos auto-aprobar
-      const autoApproveSkills = ['weather', 'web-search'];
-      if (autoApproveSkills.includes(detectedSkill.toolName)) {
-        options.autoApprove = true;
-      }
-      
-      console.log(`[Skill Detection] Auto-detected skill: ${detectedSkill.toolName}`);
-
-      // Ejecutar el skill y obtener resultado
-      const skillResult = await this.executeSkill(detectedSkill.toolName, detectedSkill.toolInput);
-
-      enhancedPrompt = `${prompt}\n\nYA TENGO LA INFORMACIÓN ACTUAL:\n${skillResult}\n\nRESPONDE AL USUARIO USANDO EXACTAMENTE ESTOS DATOS. NO DIGAS QUE NECESITAS CONSULTAR INTERNET.`;
-      this.addSystemMessage(sessionId, `[Resultado de ${detectedSkill.toolName}]: ${skillResult}`);
-    }
-   */
     // Mark session as running
     this.store.updateSession(sessionId, { status: 'running' });
 
