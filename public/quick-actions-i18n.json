@@ -202,5 +202,107 @@
         }
       }
     }
+  },
+  "sp": {
+  "pptx": {
+    "label": "Crear Diapositivas",
+    "prompts": {
+      "pptx-work-report": {
+        "label": "Informe de Trabajo",
+        "description": "Informe de resumen trimestral y planificación de la siguiente fase",
+        "prompt": "Crea una presentación PPT de informe de trabajo trimestral con el siguiente contenido:\n\n1. Revisión de los logros principales del trabajo en este trimestre\n2. Progreso de proyectos clave e hitos completados\n3. Cumplimiento de métricas de rendimiento (visualizado con gráficos)\n4. Problemas encontrados y soluciones implementadas\n5. Aspectos destacados de la colaboración en equipo\n6. Planes de trabajo y objetivos para el próximo trimestre\n7. Recursos de apoyo necesarios\n\nRequisitos de estilo: Estilo empresarial conciso, lógica clara, datos visualizados, adecuado para informes a la dirección."
+      },
+      "pptx-content-research": {
+        "label": "Investigación de Industria",
+        "description": "Informe de tendencias de la industria y análisis de competidores",
+        "prompt": "Crea un informe de investigación y análisis de la industria en PPT que cubra las siguientes secciones:\n\n1. Antecedentes y objetivos de la investigación\n2. Estado general de desarrollo de la industria y tamaño del mercado\n3. Comparación de principales competidores (características, precios, reputación de usuarios)\n4. Perfil de usuario objetivo y necesidades principales\n5. Resumen de tendencias y oportunidades de la industria\n6. Recomendaciones estratégicas accionables\n\nRequisitos de estilo: Basado en datos, rico en gráficos, puntos de vista bien razonados, adecuado para compartir y discutir en equipo interno."
+      },
+      "pptx-education": {
+        "label": "Presentación Educativa",
+        "description": "Diapositivas para enseñanza en clase y explicación de conceptos",
+        "prompt": "Crea un material didáctico de divulgación científica sobre el \"Sistema Solar y Exploración Planetaria\", adecuado para uso en clases de secundaria, que incluya:\n\n1. Visión general del Sistema Solar\n2. Comparación de características básicas de los ocho planetas (tamaño, distancia, temperatura, etc.)\n3. La singularidad de la Tierra: por qué es apta para la vida\n4. Hitos importantes en la exploración espacial humana\n5. Sesión interactiva de preguntas y respuestas en clase (diseña 3-4 preguntas de reflexión)\n6. Recomendaciones de lecturas complementarias\n\nRequisitos de estilo: Vívido y dinámico, colores brillantes, contenido de menos a más complejo, estimulando la curiosidad y el deseo de exploración de los estudiantes."
+      },
+      "pptx-ai-intro": {
+        "label": "Introducción a la IA",
+        "description": "Presentación de divulgación para entender los fundamentos de la IA",
+        "prompt": "Crea una presentación de divulgación sobre inteligencia artificial para principiantes, que incluya:\n\n1. ¿Qué es la inteligencia artificial? - explicado con ejemplos cotidianos\n2. Breve historia del desarrollo de la IA (desde el Test de Turing hasta los grandes modelos de lenguaje)\n3. Escenarios comunes de aplicación de la IA (asistentes de voz, sistemas de recomendación, conducción autónoma, etc.)\n4. Principios básicos del aprendizaje automático (explicados con analogías intuitivas)\n5. Cómo funcionan los grandes modelos y ChatGPT\n6. Lo que la IA puede y no puede hacer\n7. Cómo las personas comunes pueden empezar a usar herramientas de IA para mejorar su eficiencia\n\nRequisitos de estilo: Fácil de entender, usa diagramas y analogías, evita jerga técnica, comprensible incluso para quienes no tienen conocimientos técnicos."
+      }
+    }
+  },
+  "data-analysis": {
+    "label": "Análisis de Datos",
+    "prompts": {
+      "excel-summary": {
+        "label": "Resumen de Excel",
+        "description": "Categorizar y resumir datos de Excel",
+        "prompt": "Por favor, lee mi archivo de Excel y ayúdame a completar las siguientes tareas:\n\n1. Categorizar datos por categoría (suma, conteo, promedio)\n2. Generar análisis de proporción para cada categoría\n3. Marcar valores atípicos y puntos de datos clave\n4. Generar un archivo de Excel de estadísticas resumidas bien organizado con gráficos"
+      },
+      "image-to-excel": {
+        "label": "Imagen a Tabla",
+        "description": "Reconocer datos tabulares en imágenes y generar Excel",
+        "prompt": "Por favor, reconoce el contenido de la tabla en la imagen que subí y ayúdame a:\n\n1. Extraer todos los datos de la tabla de la imagen\n2. Organizar en formato estándar de filas y columnas\n3. Corregir posibles errores de reconocimiento\n4. Generar un archivo de Excel con formato claro"
+      },
+      "word-report": {
+        "label": "Informe de Datos",
+        "description": "Generar informe de análisis en Word basado en archivos de datos",
+        "prompt": "Por favor, genera un informe de análisis en Word basado en el archivo de datos que proporcioné, con los siguientes requisitos:\n\n1. Incluir descripción general de los datos\n2. Estadísticas de métricas clave y análisis de tendencias\n3. Hallazgos clave y resumen de conclusiones\n4. Diseño profesional, estructura clara, listo para presentar"
+      },
+      "multi-excel-merge": {
+        "label": "Combinar Múltiples Tablas",
+        "description": "Combinar múltiples archivos de Excel y estandarizar formato",
+        "prompt": "Tengo múltiples archivos de Excel que necesitan ser combinados y organizados. Por favor, ayúdame a:\n\n1. Combinar datos de múltiples archivos en una sola tabla\n2. Estandarizar nombres de columnas y formatos de datos\n3. Eliminar datos duplicados\n4. Generar un archivo de Excel combinado con marcadores de origen de datos"
+      }
+    }
+  },
+  "education": {
+    "label": "Educación y Aprendizaje",
+    "prompts": {
+      "edu-english-words": {
+        "label": "Vocabulario de Inglés",
+        "description": "Memorizar palabras en inglés de manera eficiente",
+        "prompt": "Estoy preparándome para el examen de inglés. Por favor, ayúdame a organizar una lista de aprendizaje de vocabulario básico de alta frecuencia con los siguientes requisitos:\n\n1. Seleccionar 20 palabras básicas de alta frecuencia\n2. Proporcionar transcripción fonética, definiciones en español y una breve oración de ejemplo para cada palabra\n3. Agrupar por tema (como vida cotidiana, trabajo, tecnología, etc.)\n4. Proporcionar un pequeño examen al final para ayudarme a probar mi memoria"
+      },
+      "edu-math-explain": {
+        "label": "Explicación de Problemas Matemáticos",
+        "description": "Proceso de solución detallado para problemas matemáticos",
+        "prompt": "Por favor, explica el siguiente concepto matemático de manera fácil de entender:\n\nProblema: Resolver la ecuación cuadrática 2x² + 3x - 5 = 0\n\nRequisitos:\n1. Primero repasar la forma general de ecuaciones cuadráticas y la fórmula cuadrática\n2. Mostrar el proceso completo de sustitución y cálculo paso a paso\n3. Analizar la naturaleza de las raíces usando el discriminante\n4. Finalmente verificar si la respuesta es correcta\n5. Proporcionar un problema de práctica similar para que pueda consolidar"
+      },
+      "edu-essay-writing": {
+        "label": "Guía para Redacción de Ensayos",
+        "description": "Mejorar habilidades y técnicas de escritura",
+        "prompt": "Por favor, proporciona orientación para redactar un ensayo sobre el tema \"Mi Viaje Más Inolvidable\":\n\n1. Primero proporciona un esquema claro (sugerencias estructurales para introducción, desarrollo y conclusión)\n2. Comparte 3 técnicas para hacer el artículo más vívido (como descripción detallada, descripción sensorial, emoción basada en escenas)\n3. Escribe un párrafo de apertura de muestra que muestre cómo atraer lectores\n4. Enumera 5 buenas palabras y frases que se pueden usar en este ensayo\n5. Recuerda problemas comunes de escritura y errores a evitar"
+      },
+      "edu-knowledge-explain": {
+        "label": "Explicación de Conceptos",
+        "description": "Explicar conceptos complejos en lenguaje sencillo",
+        "prompt": "Por favor, explica el concepto de \"fotosíntesis\" en un lenguaje fácil de entender:\n\n1. Resume qué es la fotosíntesis en una oración\n2. Explica el principio con analogías de la vida cotidiana\n3. Dibuja un proceso simple de fotosíntesis (diagrama de flujo basado en texto)\n4. Explica la importancia de la fotosíntesis para la Tierra y la humanidad\n5. Propón 3 preguntas de reflexión para ayudarme a profundizar mi comprensión"
+      }
+    }
+  },
+  "website": {
+    "label": "Crear Sitio Web",
+    "prompts": {
+      "web-resume": {
+        "label": "Currículum Personal",
+        "description": "Página de currículum en línea y portafolio",
+        "prompt": "Ayúdame a crear una página de currículum personal en línea atractiva.\n\nInformación básica:\n- Nombre: Juan Pérez\n- Puesto: Gerente de Producto (5 años de experiencia)\n- Contacto: Email, teléfono, espacio para código QR de WhatsApp\n\nContenido de la página:\n- Presentación personal: Breve introducción destacando fortalezas clave\n- Experiencia laboral: 3 experiencias laborales, incluyendo nombre de empresa, puesto, período, logros principales\n- Habilidades profesionales: Mostrar diseño de productos, análisis de datos, gestión de proyectos en formato de barras de progreso\n- Casos de proyectos: Mostrar 3 tarjetas de proyectos representativos con nombre y breve descripción\n- Formación académica y certificaciones\n\nEstilo de diseño:\nLimpio y profesional, diseño de dos columnas, barra lateral oscura con área de contenido principal blanco. Adecuado para compartir directamente con entrevistadores o socios."
+      },
+      "web-store": {
+        "label": "Página de Tienda",
+        "description": "Página de exhibición para pequeña tienda o estudio",
+        "prompt": "Ayúdame a crear una página web de exhibición para un estudio de panadería llamado \"Panadería El Trigal\".\n\nContenido de la página:\n- Imagen principal: Nombre del estudio, eslogan \"Hor-neando con amor, calentando cada día\", botón \"Ver Menú\"\n- Productos destacados: Mostrar 6 tarjetas de productos populares (incluyendo espacio para imagen, nombre, precio, breve descripción)\n- Sobre nosotros: Historia del estudio, filosofía del fundador, con espacio para imagen del ambiente de la tienda\n- Opiniones de clientes: 3 reseñas de usuarios con avatares y calificaciones de estrellas\n- Contacto y dirección: Horario de atención, dirección, teléfono, área para mapa incrustado\n\nEstilo de diseño:\nCálido y artístico, tonos crema y marrón como colores principales, tarjetas redondeadas, fuentes para títulos estilo manuscrito. Ambiente general cálido y acogedor."
+      },
+      "web-event": {
+        "label": "Invitación a Evento",
+        "description": "Página de invitación en línea para fiestas, bodas o eventos",
+        "prompt": "Ayúdame a crear una página web de invitación en línea para una fiesta de cumpleaños.\n\nInformación del evento:\n- Tema: \"Fiesta de 30 Años de Leo\"\n- Fecha: Sábado 15 de Agosto de 2025, 7:00 PM\n- Lugar: Terraza del Restaurante Jardín Estelar\n\nContenido de la página:\n- Animación inicial: Título con efecto de aparición gradual, efecto de confeti colorido\n- Mensaje de invitación: Texto de invitación cálido\n- Programa del evento: Línea de tiempo mostrando el flujo de la fiesta (registro, cena, juegos, pastel, socialización)\n- Código de vestimenta: Informal elegante, espacio para imagen de referencia de color\n- Guía de transporte: Dirección e indicaciones de estacionamiento\n- Confirmación de asistencia: Botones \"Asistiré\" y \"No podré asistir\"\n\nEstilo de diseño:\nRomántico y animado, fondo estrellado azul oscuro, texto acentuado en dorado, lleno de ambiente festivo. La página debe ser compatible con dispositivos móviles."
+      },
+      "web-survey": {
+        "label": "Cuestionario de Encuesta",
+        "description": "Formulario en línea y página de recolección de datos",
+        "prompt": "Ayúdame a crear una página web de cuestionario de satisfacción del cliente.\n\nTítulo del cuestionario: \"Tu Opinión es Importante para Nosotros\"\n\nContenido del cuestionario:\n- Información básica: Nombre (opcional), Contacto (opcional)\n- Opción única: Satisfacción general (Muy satisfecho/Satisfecho/Neutral/Insatisfecho/Muy insatisfecho)\n- Opción única: ¿Recomendarías a amigos? (escala deslizante del 1-10)\n- Opción múltiple: ¿Qué aspectos valoras más? (Calidad del producto/Actitud del servicio/Velocidad de respuesta/Relación calidad-precio/Soporte postventa)\n- Opción única: Frecuencia de uso (Diario/Semanal/Mensual/Ocasional)\n- Pregunta abierta: Tus sugerencias u opiniones (caja de texto grande)\n- Botón de envío, mostrar página de agradecimiento después del envío\n\nEstilo de diseño:\nFresco y simple, fondo blanco, color principal verde-azulado, espacio suficiente entre preguntas, con barra de progreso mostrando avance. Adecuado para operación en dispositivos móviles."
+      }
+    }
   }
+}
 }
