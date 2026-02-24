@@ -1863,7 +1863,7 @@ class I18nService {
 
             console.log(`[i18n] First run detected. System locale: ${systemLocale}, default language: ${defaultLanguage}`);
 
-            this.currentLanguage = defaultLanguage  === 'sp' ? 'en' : defaultLanguage;
+            this.currentLanguage = defaultLanguage;
             configService.updateConfig({
               ...config,
               language: this.currentLanguage,
@@ -1882,7 +1882,7 @@ class I18nService {
         }
       } else {
         // 非首次启动:使用已保存的语言配置
-        if (config.language && (config.language === 'zh' || config.language === 'en')) {
+        if (config.language && (config.language === 'zh' || config.language === 'en'|| config.language === 'sp')){
           this.currentLanguage = config.language;
         } else {
           // 如果配置无效,fallback 到英文
@@ -1902,13 +1902,14 @@ class I18nService {
 
   // 根据系统语言推断应用语言
   private inferLanguageFromLocale(systemLocale: string): LanguageType {
-    // 只有 zh-CN (简体中文) 才使用中文,其他所有情况都使用英文
+     // Español
+    if (systemLocale === 'es' || systemLocale.startsWith('es-')) {
+      return 'sp';
+    }
+    // 只有 zh-CN (简体中文) 才使用中文
     if (systemLocale === 'zh-CN') {
       return 'zh';
     }
-     if (systemLocale=='es') {  // es, es-ES, es-MX, etc.
-    return 'sp';
-  }
     return 'en'; // 默认英文 (包括 zh-TW, zh-HK, en-*, 以及其他所有语言)
   }
   

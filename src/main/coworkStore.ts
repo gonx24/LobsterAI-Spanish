@@ -907,24 +907,31 @@ export class CoworkStore {
     this.saveDb();
   }
 
-  getAppLanguage(): 'zh' | 'en' | 'sp' {
-    interface KvRow {
-      value: string;
-    }
-
-    const row = this.getOne<KvRow>('SELECT value FROM kv WHERE key = ?', ['app_config']);
-    if (!row?.value) {
-      return 'zh';
-    }
-
-    try {
-      const config = JSON.parse(row.value) as { language?: string };
-      return config.language === 'en' ? 'en' : 'zh';
-    } catch {
-      return 'zh';
-    }
+getAppLanguage(): 'zh' | 'en' | 'sp' {
+  interface KvRow {
+    value: string;
   }
 
+  const row = this.getOne<KvRow>('SELECT value FROM kv WHERE key = ?', ['app_config']);
+  if (!row?.value) {
+    return 'sp';
+  }
+
+  try {
+    const config = JSON.parse(row.value) as { language?: string };
+    
+    // Mapear los valores posibles
+    if (config.language === 'en') {
+      return 'en';
+    } else if (config.language === 'sp' || config.language === 'es') {
+      return 'sp';
+    } else {
+      return 'zh';
+    }
+  } catch {
+    return 'zh';
+  }
+}
   private mapMemoryRow(row: CoworkUserMemoryRow): CoworkUserMemory {
     return {
       id: row.id,
