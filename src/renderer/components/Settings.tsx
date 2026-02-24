@@ -26,6 +26,8 @@ import EmailSkillConfig from './skills/EmailSkillConfig';
 import { defaultConfig, type AppConfig, getVisibleProviders } from '../config';
 
 type TabType = 'general' | 'model' | 'coworkSandbox' | 'coworkMemory' | 'shortcuts' | 'im' | 'email';
+type ThemeType = 'light' | 'dark' | 'system' | 'blue';
+//type AppliedThemeType = 'light' | 'dark' | 'blue';
 
 export type SettingsOpenOptions = {
   initialTab?: TabType;
@@ -314,7 +316,8 @@ const Settings: React.FC<SettingsProps> = ({ onClose, initialTab, notice }) => {
   const dispatch = useDispatch();
   // 状态
   const [activeTab, setActiveTab] = useState<TabType>(initialTab ?? 'general');
-  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
+  // CAMBIO IMPORTANTE: El estado theme ahora puede ser 'system'
+  const [theme, setTheme] = useState<ThemeType>('system');
   const [language, setLanguage] = useState<LanguageType>('zh');
   const [autoLaunch, setAutoLaunchState] = useState(false);
   const [isUpdatingAutoLaunch, setIsUpdatingAutoLaunch] = useState(false);
@@ -325,7 +328,7 @@ const Settings: React.FC<SettingsProps> = ({ onClose, initialTab, notice }) => {
   const [isTesting, setIsTesting] = useState(false);
   const [isImportingProviders, setIsImportingProviders] = useState(false);
   const [isExportingProviders, setIsExportingProviders] = useState(false);
-  const initialThemeRef = useRef<'light' | 'dark' | 'system'>(themeService.getTheme());
+  const initialThemeRef = useRef<ThemeType>(themeService.getTheme());
   const initialLanguageRef = useRef<LanguageType>(i18nService.getLanguage());
   const didSaveRef = useRef(false);
 
@@ -420,6 +423,7 @@ const Settings: React.FC<SettingsProps> = ({ onClose, initialTab, notice }) => {
       // Set general settings
       initialThemeRef.current = config.theme;
       initialLanguageRef.current = config.language;
+      // AHORA FUNCIONA porque theme puede ser 'system'
       setTheme(config.theme);
       setLanguage(config.language);
 
@@ -1551,10 +1555,11 @@ const Settings: React.FC<SettingsProps> = ({ onClose, initialTab, notice }) => {
               <h4 className="text-sm font-medium dark:text-claude-darkText text-claude-text mb-3">
                 {i18nService.t('appearance')}
               </h4>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-4 gap-4">
                 {([
                   { value: 'light' as const, label: i18nService.t('light') },
                   { value: 'dark' as const, label: i18nService.t('dark') },
+                  { value: 'blue' as const, label: i18nService.t('blue') }, 
                   { value: 'system' as const, label: i18nService.t('system') },
                 ]).map((option) => {
                   const isSelected = theme === option.value;
@@ -1607,6 +1612,29 @@ const Settings: React.FC<SettingsProps> = ({ onClose, initialTab, notice }) => {
                             <rect x="42" y="46" width="40" height="4" rx="2" fill="#3A3F4B" />
                             <rect x="42" y="54" width="66" height="3" rx="1.5" fill="#252930" />
                             <rect x="42" y="60" width="58" height="3" rx="1.5" fill="#252930" />
+                          </>
+                        )}
+                         {option.value === 'blue' && (
+                          <>
+                            {/* Barra lateral izquierda - Azul más oscuro */}
+                            <rect x="0" y="0" width="30" height="80" fill="#0A3B5C" />
+                            <rect x="4" y="8" width="22" height="4" rx="2" fill="#1C5F8C" />
+                            <rect x="4" y="16" width="18" height="3" rx="1.5" fill="#15507A" />
+                            <rect x="4" y="22" width="20" height="3" rx="1.5" fill="#15507A" />
+                            <rect x="4" y="28" width="16" height="3" rx="1.5" fill="#15507A" />
+                            
+                            {/* Área principal - Azul principal */}
+                            <rect x="30" y="0" width="90" height="80" fill="#0A4B73" />
+                            
+                            {/* Área de contenido - Blanco con elementos de UI */}
+                            <rect x="36" y="8" width="78" height="64" rx="4" fill="#FFFFFF" />
+                            <rect x="42" y="16" width="50" height="4" rx="2" fill="#D5D7DB" />
+                            <rect x="42" y="24" width="66" height="3" rx="1.5" fill="#E2E4E7" />
+                            <rect x="42" y="30" width="60" height="3" rx="1.5" fill="#E2E4E7" />
+                            <rect x="42" y="36" width="55" height="3" rx="1.5" fill="#E2E4E7" />
+                            <rect x="42" y="46" width="40" height="4" rx="2" fill="#D5D7DB" />
+                            <rect x="42" y="54" width="66" height="3" rx="1.5" fill="#E2E4E7" />
+                            <rect x="42" y="60" width="58" height="3" rx="1.5" fill="#E2E4E7" />
                           </>
                         )}
                         {option.value === 'system' && (
@@ -2488,4 +2516,4 @@ const Settings: React.FC<SettingsProps> = ({ onClose, initialTab, notice }) => {
   );
 };
 
-export default Settings; 
+export default Settings;

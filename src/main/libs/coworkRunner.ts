@@ -2095,6 +2095,676 @@ case 'docx': {
     return `Error al crear documento: ${errorMessage}`;
   }
 }
+
+case 'pptx': {
+  // Definir interfaces para los tipos
+  interface SlideContent {
+    type?: string;
+    title?: string;
+    bullets?: string[];
+    placeholderText?: string;
+    content?: string;
+    hasChart?: boolean;
+    chartType?: string;
+  }
+
+  interface PresentationContent {
+    title?: string;
+    subtitle?: string;
+    slides?: SlideContent[];
+  }
+
+  const { title, slides, topics, format, template, content } = toolInput;
+  
+  try {
+    // Validar entradas con tipado correcto
+    const safeTitle = typeof title === 'string' ? title : 'presentacion';
+    const safeSlides = typeof slides === 'number' ? slides : 5;
+    const safeTopics = Array.isArray(topics) ? topics.map(t => String(t)) : [];
+    const safeFormat = typeof format === 'string' ? format : 'professional';
+    const safeTemplate = typeof template === 'string' ? template : null;
+    const safeContent = (content && typeof content === 'object') ? content as PresentationContent : {};
+    
+    const fs = require('fs');
+    const path = require('path');
+    const { exec, execSync } = require('child_process');
+    const util = require('util');
+    const execAsync = util.promisify(exec);
+    
+    // Obtener workingDirectory de la configuración
+    const config = this.store.getConfig();
+    const projectDir = config.workingDirectory;
+    
+    if (!projectDir) {
+      return 'Error: No se encontró el directorio de trabajo configurado';
+    }
+    
+    // Asegurar que existe
+    fs.mkdirSync(projectDir, { recursive: true });
+    
+    // Crear nombre de archivo válido
+    let baseFileName = safeTitle;
+    if (!baseFileName.toLowerCase().endsWith('.pptx')) {
+      baseFileName = `${baseFileName}.pptx`;
+    }
+    const fileName = baseFileName.replace(/[^a-z0-9_.-]/gi, '_');
+    const filePath = path.join(projectDir, fileName);
+    
+    // Directorio para archivos temporales
+    const tempDir = path.join(projectDir, `_temp_pptx_${Date.now()}`);
+    fs.mkdirSync(tempDir, { recursive: true });
+    
+    // Determinar colores según formato
+    let colors = {
+      primary: '#1C2833',
+      secondary: '#2E4053',
+      accent: '#AAB7B8',
+      background: '#F4F6F6',
+      text: '#000000'
+    };
+    
+    // Paletas según formato
+    if (safeFormat === 'professional' || safeFormat === 'business') {
+      colors = {
+        primary: '#1C2833',    // Azul marino
+        secondary: '#2E4053',   // Gris pizarra
+        accent: '#AAB7B8',      // Plata
+        background: '#F4F6F6',  // Blanco humo
+        text: '#000000'
+      };
+    } else if (safeFormat === 'creative') {
+      colors = {
+        primary: '#5EA8A7',     // Verde azulado
+        secondary: '#277884',   // Verde azulado oscuro
+        accent: '#FE4447',      // Coral
+        background: '#FFFFFF',  // Blanco
+        text: '#000000'
+      };
+    } else if (safeFormat === 'modern') {
+      colors = {
+        primary: '#722880',     // Púrpura
+        secondary: '#D72D51',   // Rosa
+        accent: '#EB5C18',      // Naranja
+        background: '#FFFFFF',  // Blanco
+        text: '#000000'
+      };
+    }
+    
+    // Verificar si tenemos contenido estructurado
+    const hasContent = safeContent && Object.keys(safeContent).length > 0;
+    
+    // Variable para contar slides (definida fuera de los bloques)
+    let totalSlides = 0;
+    
+    if (hasContent) {
+      // Usar html2pptx para crear presentación con contenido personalizado
+      
+      // Crear archivo HTML para cada slide
+      const slidesHtml: string[] = [];
+      
+      // Slide 1: Portada
+      slidesHtml.push(`
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      width: 720pt;
+      height: 405pt;
+      margin: 0;
+      padding: 40pt;
+      font-family: Arial, sans-serif;
+      background-color: ${colors.primary};
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+    h1 {
+      font-size: 48pt;
+      margin-bottom: 20pt;
+      font-weight: bold;
+    }
+    h2 {
+      font-size: 24pt;
+      font-weight: normal;
+      opacity: 0.9;
+    }
+    .date {
+      margin-top: 40pt;
+      font-size: 18pt;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+  <h1>${safeContent.title || safeTitle}</h1>
+  <h2>${safeContent.subtitle || 'Presentación Profesional'}</h2>
+  <div class="date">${new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+</body>
+</html>
+      `);
+      
+      // Slides de contenido
+      if (safeContent.slides && Array.isArray(safeContent.slides)) {
+        safeContent.slides.forEach((slide: SlideContent, index) => {
+          const slideNumber = index + 2; // +2 porque slide 1 es portada
+          
+          if (slide.type === 'two-column') {
+            // Layout de dos columnas (preferido para texto + contenido)
+            slidesHtml.push(`
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      width: 720pt;
+      height: 405pt;
+      margin: 0;
+      padding: 30pt;
+      font-family: Arial, sans-serif;
+      background-color: white;
+      color: ${colors.text};
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      width: 100%;
+      margin-bottom: 20pt;
+    }
+    .header h2 {
+      font-size: 28pt;
+      color: ${colors.primary};
+      margin: 0;
+      padding-bottom: 10pt;
+      border-bottom: 3pt solid ${colors.accent};
+    }
+    .content-row {
+      display: flex;
+      flex: 1;
+      gap: 30pt;
+    }
+    .left-column {
+      flex: 1;
+      padding-right: 15pt;
+    }
+    .right-column {
+      flex: 1;
+      padding-left: 15pt;
+      background-color: ${colors.background};
+      border-radius: 10pt;
+      padding: 20pt;
+    }
+    ul {
+      margin: 0;
+      padding-left: 20pt;
+    }
+    li {
+      font-size: 18pt;
+      margin-bottom: 12pt;
+      line-height: 1.4;
+    }
+    .placeholder {
+      background-color: ${colors.accent}40;
+      border: 2pt dashed ${colors.secondary};
+      border-radius: 8pt;
+      padding: 20pt;
+      text-align: center;
+      color: ${colors.secondary};
+      font-weight: bold;
+      height: 200pt;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2>${slide.title || `Sección ${slideNumber}`}</h2>
+  </div>
+  <div class="content-row">
+    <div class="left-column">
+      <ul>
+        ${(slide.bullets || ['Punto 1', 'Punto 2', 'Punto 3']).map(b => `<li>${b}</li>`).join('')}
+      </ul>
+    </div>
+    <div class="right-column">
+      <div class="placeholder">
+        ${slide.placeholderText || 'Gráfico / Tabla / Imagen'}
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+            `);
+          } else {
+            // Layout de contenido completo
+            slidesHtml.push(`
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      width: 720pt;
+      height: 405pt;
+      margin: 0;
+      padding: 40pt;
+      font-family: Arial, sans-serif;
+      background-color: white;
+      color: ${colors.text};
+    }
+    h2 {
+      font-size: 32pt;
+      color: ${colors.primary};
+      margin-top: 0;
+      margin-bottom: 30pt;
+      border-bottom: 3pt solid ${colors.accent};
+      padding-bottom: 10pt;
+    }
+    .content {
+      font-size: 20pt;
+      line-height: 1.5;
+    }
+    ul {
+      margin: 20pt 0;
+    }
+    li {
+      font-size: 20pt;
+      margin-bottom: 15pt;
+    }
+    .chart-placeholder {
+      background-color: ${colors.background};
+      border: 2pt solid ${colors.secondary};
+      border-radius: 10pt;
+      padding: 30pt;
+      text-align: center;
+      margin-top: 20pt;
+      color: ${colors.secondary};
+    }
+  </style>
+</head>
+<body>
+  <h2>${slide.title || `Diapositiva ${slideNumber}`}</h2>
+  <div class="content">
+    ${slide.content || '<ul><li>Contenido de ejemplo</li><li>Puedes reemplazar esto</li><li>Con tu información real</li></ul>'}
+  </div>
+  ${slide.hasChart ? `<div class="chart-placeholder">[Gráfico: ${slide.chartType || 'datos'}]</div>` : ''}
+</body>
+</html>
+            `);
+          }
+        });
+        totalSlides = slidesHtml.length;
+      } else {
+        // Generar slides por defecto basados en topics
+        const topicList = safeTopics.length > 0 ? safeTopics : 
+          ['Introducción', 'Contexto', 'Análisis', 'Resultados', 'Conclusiones', 'Próximos Pasos'];
+        
+        topicList.slice(0, safeSlides).forEach((topic, index) => {
+          slidesHtml.push(`
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      width: 720pt;
+      height: 405pt;
+      margin: 0;
+      padding: 40pt;
+      font-family: Arial, sans-serif;
+      background-color: white;
+      color: ${colors.text};
+    }
+    h2 {
+      font-size: 36pt;
+      color: ${colors.primary};
+      margin-top: 0;
+      margin-bottom: 30pt;
+    }
+    .content {
+      font-size: 24pt;
+      line-height: 1.6;
+    }
+    .bullet {
+      margin: 20pt 0;
+      padding-left: 20pt;
+      border-left: 5pt solid ${colors.accent};
+    }
+  </style>
+</head>
+<body>
+  <h2>${topic}</h2>
+  <div class="content">
+    <div class="bullet">• Punto clave sobre ${topic}</div>
+    <div class="bullet">• Dato relevante y análisis</div>
+    <div class="bullet">• Conclusión importante</div>
+  </div>
+</body>
+</html>
+          `);
+        });
+        totalSlides = slidesHtml.length;
+      }
+      
+      // Guardar archivos HTML
+      const htmlFiles: string[] = [];
+      slidesHtml.forEach((html, index) => {
+        const htmlPath = path.join(tempDir, `slide-${index + 1}.html`);
+        fs.writeFileSync(htmlPath, html);
+        htmlFiles.push(htmlPath);
+      });
+      
+      // Crear script de Node.js para usar html2pptx
+      const scriptPath = path.join(tempDir, 'create-pptx.js');
+      const scriptContent = `
+const fs = require('fs');
+const path = require('path');
+const PptxGenJS = require('pptxgenjs');
+
+async function createPresentation() {
+  const pptx = new PptxGenJS();
+  
+  // Configuración global
+  pptx.layout = 'LAYOUT_WIDE';
+  pptx.defineLayout({ name:'WIDE', width:13.33, height:7.5 }); // 16:9 ratio
+  
+  // Leer archivos HTML y crear diapositivas
+  const htmlFiles = ${JSON.stringify(htmlFiles)};
+  
+  for (let i = 0; i < htmlFiles.length; i++) {
+    const htmlPath = htmlFiles[i];
+    const html = fs.readFileSync(htmlPath, 'utf-8');
+    
+    // Extraer título del HTML (simplificado)
+    const titleMatch = html.match(/<h[12][^>]*>([^<]+)<\\/h[12]>/);
+    const title = titleMatch ? titleMatch[1] : \`Diapositiva \${i+1}\`;
+    
+    // Crear diapositiva
+    const slide = pptx.addSlide();
+    
+    // Extraer color de fondo del HTML
+    const bgColorMatch = html.match(/background-color:\\s*([^;]+)/);
+    const bgColor = bgColorMatch ? bgColorMatch[1].trim() : '${colors.background}';
+    
+    // Extraer puntos para lista
+    const bulletPoints = [];
+    const bulletRegex = /<li>([^<]+)<\\/li>/g;
+    let bulletMatch;
+    while ((bulletMatch = bulletRegex.exec(html)) !== null) {
+      bulletPoints.push(bulletMatch[1]);
+    }
+    
+    if (i === 0) {
+      // Portada
+      slide.addText(title, {
+        x: 1.0,
+        y: 2.5,
+        w: 11.33,
+        h: 1.5,
+        fontSize: 44,
+        bold: true,
+        color: 'FFFFFF',
+        align: 'center'
+      });
+      
+      // Subtítulo si existe
+      const subtitleMatch = html.match(/<h2>([^<]+)<\\/h2>/g);
+      if (subtitleMatch && subtitleMatch.length > 1) {
+        slide.addText(subtitleMatch[1].replace(/<\\/?h2>/g, ''), {
+          x: 1.0,
+          y: 4.0,
+          w: 11.33,
+          h: 1.0,
+          fontSize: 24,
+          color: 'FFFFFF',
+          align: 'center'
+        });
+      }
+    } else if (bulletPoints.length > 0) {
+      // Diapositiva con lista de puntos
+      slide.addText(title, {
+        x: 0.5,
+        y: 0.3,
+        w: 12.33,
+        h: 1.0,
+        fontSize: 32,
+        bold: true,
+        color: '${colors.primary}',
+        align: 'left'
+      });
+      
+      slide.addText(bulletPoints.map(text => ({ text, options: { bullet: true } })), {
+        x: 0.8,
+        y: 1.5,
+        w: 11.73,
+        h: 5.0,
+        fontSize: 20,
+        color: '${colors.text}'
+      });
+    } else {
+      // Diapositiva genérica
+      slide.addText(title, {
+        x: 0.5,
+        y: 0.5,
+        w: 12.33,
+        h: 1.0,
+        fontSize: 36,
+        bold: true,
+        color: '${colors.primary}'
+      });
+      
+      // Extraer texto del body
+      const bodyMatch = html.match(/<div[^>]*>([^<]+)<\\/div>/);
+      if (bodyMatch) {
+        slide.addText(bodyMatch[1], {
+          x: 0.8,
+          y: 2.0,
+          w: 11.73,
+          h: 4.0,
+          fontSize: 24,
+          color: '${colors.text}'
+        });
+      }
+    }
+  }
+  
+  // Guardar presentación
+  pptx.writeFile({ fileName: '${path.basename(filePath)}' });
+  console.log('Presentación creada exitosamente');
+}
+
+createPresentation().catch(console.error);
+`;
+      
+      fs.writeFileSync(scriptPath, scriptContent);
+      
+      try {
+        // Ejecutar script de Node.js
+        await execAsync(`cd "${tempDir}" && node create-pptx.js`);
+        
+        // Mover el archivo generado al directorio de proyecto
+        const generatedFile = path.join(tempDir, path.basename(filePath));
+        if (fs.existsSync(generatedFile)) {
+          fs.copyFileSync(generatedFile, filePath);
+        } else {
+          throw new Error('No se pudo generar el archivo PPTX');
+        }
+        
+        // Generar thumbnail para validación visual (opcional)
+        try {
+          // Verificar si LibreOffice está instalado
+          await execAsync('soffice --version');
+          
+          const thumbnailDir = path.join(projectDir, 'thumbnails');
+          fs.mkdirSync(thumbnailDir, { recursive: true });
+          
+          // Convertir a PDF
+          await execAsync(`soffice --headless --convert-to pdf --outdir "${tempDir}" "${filePath}"`);
+          
+          const pdfPath = path.join(tempDir, path.basename(filePath).replace('.pptx', '.pdf'));
+          if (fs.existsSync(pdfPath)) {
+            // Generar thumbnail de la primera página
+            await execAsync(`pdftoppm -jpeg -r 72 -f 1 -l 1 "${pdfPath}" "${path.join(thumbnailDir, path.basename(filePath, '.pptx'))}"`);
+          }
+        } catch (thumbnailError: any) {
+          console.warn('[PPTX] No se pudo generar thumbnail (LibreOffice no instalado):', thumbnailError.message);
+        }
+        
+        console.log(`[PPTX] Presentación creada en: ${filePath}`);
+        
+        // Limpiar archivos temporales
+        fs.rmSync(tempDir, { recursive: true, force: true });
+        
+        return `✅ Presentación "${path.basename(filePath)}" creada exitosamente en:\n${filePath}\n\n📊 Incluye ${totalSlides} diapositivas con formato ${safeFormat}.`;
+        
+      } catch (error: any) {
+        // Limpiar archivos temporales
+        if (fs.existsSync(tempDir)) {
+          fs.rmSync(tempDir, { recursive: true, force: true });
+        }
+        throw error;
+      }
+      
+    } else {
+      // Usar método simple sin html2pptx
+      const PYTHON_CODE = `
+import json
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.enum.text import PP_ALIGN
+from pptx.dml.color import RGBColor
+
+# Crear presentación
+prs = Presentation()
+prs.slide_width = Inches(13.33)
+prs.slide_height = Inches(7.5)
+
+# Colores
+primary = ${JSON.stringify(colors.primary)}
+secondary = ${JSON.stringify(colors.secondary)}
+accent = ${JSON.stringify(colors.accent)}
+
+def hex_to_rgb(hex_color):
+    hex_color = hex_color.lstrip('#')
+    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+
+# Slide 1: Portada
+slide_layout = prs.slide_layouts[0]  # Título
+slide = prs.slides.add_slide(slide_layout)
+title = slide.shapes.title
+subtitle = slide.placeholders[1]
+
+title.text = "${safeTitle}"
+title.text_frame.paragraphs[0].font.size = Pt(44)
+title.text_frame.paragraphs[0].font.bold = True
+title.text_frame.paragraphs[0].font.color.rgb = RGBColor(*hex_to_rgb(primary))
+
+subtitle.text = "Presentación Profesional"
+subtitle.text_frame.paragraphs[0].font.size = Pt(24)
+
+# Slides de contenido
+topics = ${JSON.stringify(safeTopics)}
+num_slides = min(len(topics), ${safeSlides}) if topics else ${safeSlides}
+
+for i in range(num_slides):
+    slide_layout = prs.slide_layouts[1]  # Título y contenido
+    slide = prs.slides.add_slide(slide_layout)
+    
+    title = slide.shapes.title
+    content = slide.placeholders[1]
+    
+    topic = topics[i] if i < len(topics) else f"Tema {i+1}"
+    title.text = topic
+    title.text_frame.paragraphs[0].font.size = Pt(36)
+    title.text_frame.paragraphs[0].font.bold = True
+    title.text_frame.paragraphs[0].font.color.rgb = RGBColor(*hex_to_rgb(primary))
+    
+    tf = content.text_frame
+    tf.text = f"Puntos clave sobre {topic}:"
+    
+    p = tf.add_paragraph()
+    p.text = "• Análisis detallado del tema"
+    p.font.size = Pt(20)
+    
+    p = tf.add_paragraph()
+    p.text = "• Datos relevantes y estadísticas"
+    p.font.size = Pt(20)
+    
+    p = tf.add_paragraph()
+    p.text = "• Conclusiones importantes"
+    p.font.size = Pt(20)
+
+# Guardar presentación
+prs.save('${path.basename(filePath)}')
+print(json.dumps({"status": "success", "path": "${filePath}"}))
+`;
+      
+      const scriptPath = path.join(tempDir, 'create_pptx.py');
+      fs.writeFileSync(scriptPath, PYTHON_CODE);
+      
+      try {
+        // Verificar si python-pptx está instalado
+        try {
+          await execAsync('python3 -c "import pptx"');
+        } catch {
+          console.log('[PPTX] Instalando python-pptx...');
+          await execAsync('pip3 install python-pptx');
+        }
+        
+        const { stdout } = await execAsync(`python3 "${scriptPath}"`);
+        const result = JSON.parse(stdout);
+        
+        if (result.status === 'error') {
+          throw new Error(result.message);
+        }
+        
+        // Mover archivo si es necesario
+        const generatedFile = path.join(tempDir, path.basename(filePath));
+        if (fs.existsSync(generatedFile)) {
+          fs.copyFileSync(generatedFile, filePath);
+        }
+        
+        // Calcular total de slides (portada + num_slides)
+        const numSlides = safeTopics.length > 0 ? Math.min(safeTopics.length, safeSlides) : safeSlides;
+        totalSlides = 1 + numSlides;
+        
+        console.log(`[PPTX] Presentación creada en: ${filePath}`);
+        
+        // Limpiar archivos temporales
+        fs.rmSync(tempDir, { recursive: true, force: true });
+        
+        return `✅ Presentación "${path.basename(filePath)}" creada exitosamente en:\n${filePath}\n\n📊 Incluye ${totalSlides} diapositivas.`;
+        
+      } catch (error: any) {
+        if (fs.existsSync(tempDir)) {
+          fs.rmSync(tempDir, { recursive: true, force: true });
+        }
+        throw error;
+      }
+    }
+    
+  } catch (error: any) {
+    console.error('[PPTX Error]', error);
+    
+    // Intentar limpiar archivos temporales si existe el directorio
+    try {
+      // projectDir está definido en el ámbito superior
+      const projectDir = this.store.getConfig().workingDirectory;
+      if (projectDir) {
+        const { execSync } = require('child_process');
+        execSync(`rm -rf "${path.join(projectDir, '_temp_pptx_*')}"`);
+      }
+    } catch {}
+    
+    return `❌ Error al crear presentación: ${error instanceof Error ? error.message : String(error)}`;
+  }
+}
+
+
+
       
     case 'xlsx': {
   const { title, sheets, data, format } = toolInput;

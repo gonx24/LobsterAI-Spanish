@@ -30,6 +30,20 @@ export default {
           darkBorderLight: '#1F232B',  // Subtle dark dividers
           darkText: '#E4E5E9',         // Dark primary text
           darkTextSecondary: '#8B8FA3', // Dark secondary text
+
+                    // NUEVO: Blue theme colors
+          blueBg: '#0A4B73',           // Fondo principal azul
+          blueSurface: '#125A82',       // Cards, inputs en azul
+          blueSurfaceHover: '#1A6991',  // Hover state en azul
+          blueSurfaceMuted: '#0A3B5C',  // Áreas sutiles en azul
+          blueSurfaceInset: '#052B44',  // Áreas inset en azul
+          blueBorder: '#1C5F8C',        // Bordes en azul
+          blueBorderLight: '#15507A',   // Bordes sutiles en azul
+          blueText: '#FFFFFF',          // Texto principal blanco
+          blueTextSecondary: '#E0E0E0', // Texto secundario blanco suave
+          blueAccent: '#2E8BC0',        // Acento azul más claro
+          blueAccentHover: '#3F9BD0',   // Hover del acento
+
           // Accent (tech blue)
           accent: '#3B82F6',           // Blue primary
           accentHover: '#2563EB',      // Blue hover
@@ -180,6 +194,53 @@ export default {
             },
           },
         },
+
+         // NUEVO: Tipografía para tema azul
+        blue: {
+          css: {
+            color: '#FFFFFF',
+            a: {
+              color: '#2E8BC0',
+              '&:hover': {
+                color: '#3F9BD0',
+              },
+            },
+            code: {
+              color: '#FFFFFF',
+              backgroundColor: 'rgba(18, 90, 130, 0.5)',
+              padding: '0.2em 0.4em',
+              borderRadius: '0.25rem',
+              fontWeight: '400',
+            },
+            pre: {
+              backgroundColor: '#125A82',
+              color: '#FFFFFF',
+              padding: '1em',
+              borderRadius: '0.75rem',
+              overflowX: 'auto',
+            },
+            blockquote: {
+              borderLeftColor: '#2E8BC0',
+              color: '#E0E0E0',
+            },
+            h1: {
+              color: '#FFFFFF',
+            },
+            h2: {
+              color: '#FFFFFF',
+            },
+            h3: {
+              color: '#FFFFFF',
+            },
+            h4: {
+              color: '#FFFFFF',
+            },
+            strong: {
+              color: '#FFFFFF',
+            },
+          },
+        },
+
       },
     },
   },

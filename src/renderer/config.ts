@@ -140,7 +140,7 @@ export interface AppConfig {
     };
   };
   // 主题配置
-  theme: 'light' | 'dark' | 'system';
+  theme: 'light' | 'dark' | 'system' | 'blue';
   // 语言配置
  language: 'zh' | 'en' | 'sp';
   // 语言初始化标记 (用于判断是否是首次启动)

@@ -58,7 +58,6 @@ blockquote {
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.6;
   font-weight: 400;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -72,11 +71,18 @@ blockquote {
   background-color: #0F1117;
 }
 
+/* Cold modern blue mode */
+.blue {
+  color-scheme: light;
+  color: #FFFFFF;
+  background-color: #0A4B73;
+}
+
 /* Cold modern light mode */
 .light {
   color-scheme: light;
   color: #1A1D23;
-  background-color: #F8F9FB;
+  background-color: #1f2125;
 }
 
 /* Ensure all containers inherit theme */
@@ -85,6 +91,14 @@ blockquote {
 .dark main {
   background-color: #0F1117;
   color: #E4E5E9;
+}
+
+.blue #root,
+.blue .App,
+.blue main,
+.blue body {
+  background-color: #0A4B73 !important;
+  color: #FFFFFF !important;
 }
 
 .light #root,
@@ -122,6 +136,15 @@ body {
   @apply dark:bg-claude-darkTextSecondary bg-claude-textSecondary;
 }
 
+/* Scrollbar para tema azul */
+.blue ::-webkit-scrollbar-thumb {
+  background-color: #121314 !important;
+}
+
+.blue ::-webkit-scrollbar-thumb:hover {
+  background-color: #2E8BC0 !important;
+}
+
 /* Style for select options to match theme */
 .dark option {
   background-color: #1A1D27;
@@ -131,6 +154,11 @@ body {
 .light option {
   background-color: #FFFFFF;
   color: #1A1D23;
+}
+
+.blue option {
+  background-color: #125A82;
+  color: #FFFFFF;
 }
 
 /* Ensure select elements have proper styling in Firefox */
@@ -167,6 +195,10 @@ select::-ms-expand {
   @apply focus:outline-none focus:ring-2 focus:ring-claude-accent focus:ring-offset-2 dark:focus:ring-offset-claude-darkBg focus:ring-offset-claude-bg;
 }
 
+.blue .focus-ring {
+  @apply focus:ring-claude-blueAccent focus:ring-offset-claude-blueBg;
+}
+
 /* Button styles */
 .btn-primary {
   @apply bg-claude-accent hover:bg-claude-accentHover text-white font-medium py-2 px-4 rounded-lg transition-colors;
@@ -174,6 +206,23 @@ select::-ms-expand {
 
 .btn-secondary {
   @apply dark:bg-claude-darkSurface bg-claude-surface dark:hover:bg-claude-darkSurfaceHover hover:bg-claude-surfaceHover dark:text-claude-darkText text-claude-text border dark:border-claude-darkBorder border-claude-border font-medium py-2 px-4 rounded-lg transition-colors;
+}
+
+/* Blue theme button styles */
+.blue .btn-primary {
+  background-color: #2E8BC0 !important;
+}
+.blue .btn-primary:hover {
+  background-color: #3F9BD0 !important;
+}
+
+.blue .btn-secondary {
+  background-color: #125A82 !important;
+  border-color: #1C5F8C !important;
+  color: #FFFFFF !important;
+}
+.blue .btn-secondary:hover {
+  background-color: #1A6991 !important;
 }
 
 /* Sidebar width transition - instant toggle, no animation */
@@ -185,6 +234,10 @@ select::-ms-expand {
 .separator {
   @apply dark:border-claude-darkBorderLight border-claude-borderLight;
   border-top-width: 1px;
+}
+
+.blue .separator {
+  border-color: #15507A !important;
 }
 
 /* Modal backdrop */
@@ -218,6 +271,13 @@ select::-ms-expand {
   animation: shimmer 1.5s infinite;
 }
 
+.blue .skeleton {
+  background-color: #125A82 !important;
+}
+.blue .skeleton::after {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent) !important;
+}
+
 /* Streaming activity bar */
 .streaming-bar {
   position: relative;
@@ -243,7 +303,109 @@ select::-ms-expand {
 .dark .streaming-bar::before {
   box-shadow: 0 0 6px rgba(59,130,246,0.4);
 }
+
+.blue .streaming-bar {
+  background: rgba(46,139,192,0.1) !important;
+}
+.blue .streaming-bar::before {
+  background: linear-gradient(90deg, rgba(46,139,192,0.3) 0%, rgba(46,139,192,0.8) 50%, rgba(46,139,192,0.3) 100%) !important;
+}
+
 @keyframes streaming-slide {
   0% { left: -40%; }
   100% { left: 100%; }
+}
+
+/* Componentes específicos para tema azul */
+.blue .bg-claude-bg {
+  background-color: #0A4B73 !important;
+}
+
+.blue .bg-claude-surface {
+  background-color: #125A82 !important;
+}
+
+.blue .bg-claude-surfaceHover:hover {
+  background-color: #1A6991 !important;
+}
+
+.blue .bg-claude-surfaceMuted {
+  background-color: #0A3B5C !important;
+}
+
+.blue .bg-claude-surfaceInset {
+  background-color: #052B44 !important;
+}
+
+.blue .text-claude-text {
+  color: #FFFFFF !important;
+}
+
+.blue .text-claude-textSecondary {
+  color: #E0E0E0 !important;
+}
+
+.blue .border-claude-border {
+  border-color: #1C5F8C !important;
+}
+
+.blue .border-claude-borderLight {
+  border-color: #15507A !important;
+}
+
+/* Inputs en tema azul */
+.blue input,
+.blue textarea,
+.blue select,
+.blue .bg-claude-surfaceInset {
+  background-color: #052B44 !important;
+  border-color: #1C5F8C !important;
+  color: #FFFFFF !important;
+}
+
+.blue input:focus,
+.blue textarea:focus,
+.blue select:focus {
+  border-color: #2E8BC0 !important;
+  outline-color: #2E8BC0 !important;
+  ring-color: #2E8BC0 !important;
+}
+
+/* Cards y contenedores */
+.blue .dark\:bg-claude-darkSurface,
+.blue .bg-claude-surface {
+  background-color: #0a161d !important;
+}
+
+/* Modal en tema azul */
+.blue .modal-content {
+  background-color: #125A82 !important;
+  border-color: #1C5F8C !important;
+}
+
+/* ThemedSelect component */
+.blue .themed-select,
+.blue select {
+  background-color: #052B44 !important;
+  border-color: #1C5F8C !important;
+  color: #FFFFFF !important;
+}
+
+/* Headers y títulos */
+.blue h1, .blue h2, .blue h3, .blue h4, .blue h5, .blue h6 {
+  color: #FFFFFF !important;
+}
+
+/* Enlaces */
+.blue a {
+  color: #2E8BC0 !important;
+}
+
+.blue a:hover {
+  color: #3F9BD0 !important;
+}
+
+.blue button:hover,
+.blue .action-button:hover {
+  background-color: #020202 !important;
 }

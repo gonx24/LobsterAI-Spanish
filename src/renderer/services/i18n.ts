@@ -5,6 +5,7 @@ export type LanguageType = 'zh' | 'sp' | 'en';
 // 语言文本映射
 const translations: Record<LanguageType, Record<string, string>> = {
   zh: {
+    
     // 通用
     save: '保存',
     cancel: '取消',
@@ -27,7 +28,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     system: '跟随系统',
     chinese: '中文',
     english: 'English',
-    
+    blue: 'Azul',
     // API设置
     apiKey: 'API Key',
     apiKeyPlaceholder: '输入你的 API Key',
@@ -630,6 +631,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     language: 'Idioma',
     light: 'Claro',
     dark: 'Oscuro',
+    blue: 'Azul',
     system: 'Sistema',
     chinese: 'Chino',
     english: 'Inglés',
@@ -1237,6 +1239,7 @@ const translations: Record<LanguageType, Record<string, string>> = {
     language: 'Language',
     light: 'Light',
     dark: 'Dark',
+    blue: 'Blue',
     system: 'System',
     chinese: 'Chinese',
     english: 'English',

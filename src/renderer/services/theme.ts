@@ -1,8 +1,8 @@
 import { configService } from './config';
 
-type ThemeType = 'light' | 'dark' | 'system';
+type ThemeType = 'light' | 'dark' | 'system' | 'blue';
 
-// Cold modern color palette
+// Cold modern color palette with blue theme
 const COLORS = {
   light: {
     bg: '#F8F9FB',
@@ -12,12 +12,16 @@ const COLORS = {
     bg: '#0F1117',
     text: '#E4E5E9',
   },
+  blue: {
+    bg: '#0A4B73',
+    text: '#FFFFFF',
+  },
 };
 
 class ThemeService {
   private mediaQuery: MediaQueryList | null = null;
   private currentTheme: ThemeType = 'system';
-  private appliedTheme: 'light' | 'dark' | null = null;
+  private appliedTheme: 'light' | 'dark' | 'blue' | null = null;
   private initialized = false;
   private mediaQueryListener: ((event: MediaQueryListEvent) => void) | null = null;
 
@@ -56,9 +60,13 @@ class ThemeService {
 
   // 设置主题
   setTheme(theme: ThemeType): void {
-    const effectiveTheme = theme === 'system'
-      ? (this.mediaQuery?.matches ? 'dark' : 'light')
-      : theme;
+    let effectiveTheme: 'light' | 'dark' | 'blue';
+
+    if (theme === 'system') {
+      effectiveTheme = this.mediaQuery?.matches ? 'dark' : 'light';
+    } else {
+      effectiveTheme = theme;
+    }
 
     if (this.currentTheme === theme && this.appliedTheme === effectiveTheme) {
       return;
@@ -68,7 +76,6 @@ class ThemeService {
     this.currentTheme = theme;
 
     if (theme === 'system') {
-      // 如果是系统主题，则根据系统设置应用
       console.log(`System theme detected, using: ${effectiveTheme}`);
     }
 
@@ -81,8 +88,8 @@ class ThemeService {
     return this.currentTheme;
   }
 
-  // 获取当前有效主题（实际应用的明/暗主题）
-  getEffectiveTheme(): 'light' | 'dark' {
+  // 获取当前有效主题（实际应用的明/暗/蓝主题）
+  getEffectiveTheme(): 'light' | 'dark' | 'blue' {
     if (this.currentTheme === 'system') {
       return this.mediaQuery?.matches ? 'dark' : 'light';
     }
@@ -90,7 +97,7 @@ class ThemeService {
   }
 
   // 应用主题到DOM
-  private applyTheme(theme: 'light' | 'dark'): void {
+  private applyTheme(theme: 'light' | 'dark' | 'blue'): void {
     // 避免重复应用相同主题
     if (this.appliedTheme === theme) {
       return;
@@ -101,33 +108,18 @@ class ThemeService {
     const root = document.documentElement;
     const colors = COLORS[theme];
 
-    if (theme === 'dark') {
-      // Apply dark theme to HTML element (for Tailwind)
-      root.classList.add('dark');
-      root.classList.remove('light');
+    // 移除所有主题类
+    root.classList.remove('dark', 'light', 'blue');
+    document.body.classList.remove('dark', 'light', 'blue');
 
-      // Make sure theme is consistent across entire DOM
-      document.body.classList.add('dark');
-      document.body.classList.remove('light');
+    // 添加当前主题类
+    root.classList.add(theme);
+    document.body.classList.add(theme);
 
-      // Set background and text colors
-      root.style.backgroundColor = colors.bg;
-      document.body.style.backgroundColor = colors.bg;
-      document.body.style.color = colors.text;
-    } else {
-      // Apply light theme to HTML element (for Tailwind)
-      root.classList.remove('dark');
-      root.classList.add('light');
-
-      // Make sure theme is consistent across entire DOM
-      document.body.classList.remove('dark');
-      document.body.classList.add('light');
-
-      // Set background and text colors
-      root.style.backgroundColor = colors.bg;
-      document.body.style.backgroundColor = colors.bg;
-      document.body.style.color = colors.text;
-    }
+    // 设置背景和文字颜色
+    root.style.backgroundColor = colors.bg;
+    document.body.style.backgroundColor = colors.bg;
+    document.body.style.color = colors.text;
 
     // Update CSS variables for color transition animations
     root.style.setProperty('--theme-transition', 'background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease');
@@ -136,15 +128,9 @@ class ThemeService {
     // Ensure #root element also gets the theme
     const rootElement = document.getElementById('root');
     if (rootElement) {
-      if (theme === 'dark') {
-        rootElement.classList.add('dark');
-        rootElement.classList.remove('light');
-        rootElement.style.backgroundColor = colors.bg;
-      } else {
-        rootElement.classList.remove('dark');
-        rootElement.classList.add('light');
-        rootElement.style.backgroundColor = colors.bg;
-      }
+      rootElement.classList.remove('dark', 'light', 'blue');
+      rootElement.classList.add(theme);
+      rootElement.style.backgroundColor = colors.bg;
     }
   }
 }
